@@ -1,0 +1,174 @@
+A. dt Substeps?
+B. Boundary Conditions
+
+
+C. In the future (Vulkan): Asynchronous Rendering+Compute
+Draw Thread (Main Thread) - Reads from the Simulation Queue for any new frame to draw
+if tmp = queue.pop() != nullptr ==>
+	drawFrame(tmp)
+	blitFramebuffer
+else
+	return;
+
+Compute Thread - OpenGL context exclusively for pumping out as many new simulation frames as possible to the Simulation queue
+nextFrame = ComputeFluid(...);
+queue.push_back(nextFrame);
+
+prevFrame = nextFrame;
+
+
+ComputeFluid(...) {
+	if(frameCounter == 0) {
+		prevFrame = textureList[0];
+		nextFrame = textureList[1];
+		textureCounter = 1;
+	}
+	frameToReturn = newFrame;
+
+	compute(prevFrame, frameToReturn); /* this is computing result to newFrame */
+	prevFrame = frameToReturn;
+	newFrame  = textureList[++textureCounter * (textureCounter < TextureListLength)];
+	return frameToReturn;
+}
+
+
+Regarding Topic B:
+1. Store boundary values for each face of a boundary
+2. Needs boundary pass to disable boundary-faces that are adjacent to other boundary-faces
+3. This should work:
+	struct Boundary {
+		vec4 left;
+		vec4 right;
+		vec4 down;
+		vec4 up;
+		/* each vec4 is [u.x, u.y, pressure, 0] */
+	};
+	/* Notice that we can use a mat3x4 for the layout */
+
+
+Add Arbitrary Boundaries
+
+
+
+u_hat = jacobi_solver(10, previousVelocity);
+
+
+Multigrid:
+512x512 -> 256x256 -> 128x128 -> 64x64 
+https://stackoverflow.com/questions/60094768/how-to-display-an-animated-gif-in-a-github-readme-file
+
+
+Make vs2022 work for premake 
+Update README.md for compute-shader-fluid-2d
+Split awc2 into its own project
+
+
+
+D. Useful CPU/GPU Timer Structs from old projects:
+
+
+template<typename internal_type = double, u32 querySwapSize = 2> struct GPUTimer {
+	/* Implemented with help from https://www.lighthouse3d.com/tutorials/opengl-timer-query/ */
+private:
+	/* 2 queries per swap, so that 1 query won't stall the rest of the program. */
+	struct {
+		union {
+			u32 q0, q1;
+			u32 q[2];
+		};
+	} queryIDbuf[querySwapSize];
+	u32 swapIdx;
+
+	u64 prevFrame, nextFrame;
+
+public:
+	GPUTimer() : prevFrame(0), nextFrame(0), swapIdx(0) {
+		glCreateQueries(querySwapSize << 1, &queryIDbuf[0]);
+		return;
+	}
+
+	~GPUTimer() {
+		glDeleteQueries(querySwapSize << 1, &queryIDbuf[0]);
+		return;
+	}
+
+
+	u64 previousFrameCount() { return prevFrame; }
+	u64 currentFrameCount()  { return nextFrame; }
+
+
+	__force_inline void startQuery() 
+	{
+		/* query current elapsed time on gpu into q0 [the 'backbuffer'] */
+		glBeginQuery(GL_TIME_ELAPSED, queryIDbuf[swapIdx].q0);
+	}
+
+
+	__force_inline void endQuery()
+	{
+		glEndQuery(GL_TIME_ELAPSED); /* stop the query */
+		prevFrame = nextFrame; 		 /* after frame N, frame N+1 needs to update prevFrame count.     */
+		glGetQueryBufferObjectui64v( /* query current elapsed time on gpu into q1 [the 'frontbuffer'] */
+			queryIDbuf[swapIdx].q1, 
+			GL_QUERY_RESULT, 
+			&nextFrame
+		);
+		/* 
+			we're not waiting for the query to be available for performance sake.
+			{
+				int done = 0;
+				glGetQueryObjectiv(query, GL_QUERY_RESULT_AVAILABLE, &done);
+			}
+			calling GL_QUERY_RESULT_AVAILABLE flushes the pipeline and will
+			probably cause massive performance hits. (Waiting for everything to sync...)
+
+			thats why every frame we'll query multiple query objects,
+			so that we'll get the result (most of the time.)
+		*/
+		return;
+	}
+
+
+	void incrementBuffers() {
+		++swapIdx;
+		swapIdx *= (swapIdx != querySwapSize); /* if not equal, we can keep swapIdx. else, we need to reset to 0. */
+		return;
+	}
+};
+
+
+
+
+template<u32 maxSamples> struct SMATick {
+private:
+	u64 totalSamples;
+	u32 index;
+	u64 sum;
+	u64 tick[maxSamples];
+public:
+	SMATick() : totalSamples(0), index(0), sum(0), tick{0} {}
+
+
+	template<typename T> T calcTick(u64 currFrameTick) 
+	{
+		sum -= tick[index];
+		sum += currFrameTick;
+		tick[index] = currFrameTick;
+		
+		++index;
+		++totalSamples;
+		index *= (index == maxSamples);
+		
+		return ((T)sum / (T)maxSamples);
+	}
+};
+
+
+
+// UE4's PseudoRandom function
+// https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Shaders/Private/Random.ush
+float pseudo(vec2 v) 
+{
+    v = fract(v/128.)*128. + vec2(-64.340622, -72.465622);
+    return fract(dot(v.xyx * v.xyy, vec3(20.390625, 60.703125, 2.4281209)));
+}

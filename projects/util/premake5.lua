@@ -23,7 +23,11 @@ project "util"
     -- Build Options
     filter "toolset:clang or toolset:gcc"
         buildoptions {
-            "-msse3"
+            "-msse3 -mavx"
+        }
+    filter "toolset:msc"
+        buildoptions {
+            "/arch:AVX"
         }
     filter {}
 

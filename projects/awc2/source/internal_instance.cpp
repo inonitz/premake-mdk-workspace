@@ -1,6 +1,5 @@
 #include "internal_instance.hpp"
 #include "internal_state.hpp"
-#include "util/util.hpp"
 
 
 namespace AWC2::internal {
@@ -15,6 +14,7 @@ AWC2Data* __awc2_lib_get_instance()
 }
 
 AWC2ContextData& __awc2_lib_get_context(unsigned char id) {
+    ifcrashfmt_debug(id == 0xFF, "No Active Context Selected!\n");
     return __library_local_data.poolmem[--id];
 }
 

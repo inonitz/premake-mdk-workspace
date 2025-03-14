@@ -14,8 +14,9 @@ project "imgui"
     includedirs { 
         "include"
     }
-    IncludeGLFWDirectory()
+    IncludeProjectHeaders("glfw-3.4")
 
+    
     -- Build Directories &// Structure
     SetupBuildDirectoriesForLibrary()
 

@@ -1,5 +1,6 @@
 #ifndef __UTIL_IF_CRASH_MACRO__
 #define __UTIL_IF_CRASH_MACRO__
+#include "util_api.h"
 #include "macro.h"
 
 

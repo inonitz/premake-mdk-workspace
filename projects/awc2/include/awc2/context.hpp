@@ -38,6 +38,7 @@ namespace AWC2 {
 
         u8* begin() { return &id[0];          }
         u8* end()   { return &id[actualSize]; }
+        bool empty() const { return actualSize == 0; }
     };
 
 

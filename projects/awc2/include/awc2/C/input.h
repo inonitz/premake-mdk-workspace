@@ -5,8 +5,9 @@
 #include <util/static_assert.h>
 
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
 
 typedef u8 AWC2KeyCode;
 #define AWC2_KEYCODE_ESCAPE (0)
@@ -105,7 +106,9 @@ typedef struct __awc2_genericCursorPositionf64 {
 UTIL_STATIC_ASSERT(sizeof(AWC2CursorPosition64) == 16, AWC2CursorPositionf64, "Conforming Size Types Across Compilers")
 
 
+#ifdef __cplusplus
 } /* extern "C" */
+#endif
 
 
 #endif /* __AWC2_C_INPUT_INTERFACE_HEADER__ */

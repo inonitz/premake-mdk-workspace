@@ -4,6 +4,7 @@
 #include <util/marker2.hpp>
 #include <util/vec2.hpp>
 #include <awc2/C/awc2.h>
+#include "awc2/C/context.h"
 #include "gl/shader2.hpp"
 
 
@@ -81,6 +82,7 @@ static inline void render(GLState& gldata)
 
 i32 compute_shader_render_to_screen()
 {
+    static constexpr const char* computeShaderFilename = "projects/program/source/2compute_screen/compute_screen.comp";
     const struct timespec pause_sleep_duration{
         .tv_sec = 0,
         .tv_nsec = 6944444
@@ -94,12 +96,6 @@ i32 compute_shader_render_to_screen()
     u8 paused{false};
     u8 contextid;
     vec2u simulationDimensions{1920, 1080};
-
-#if defined __linux__
-    static constexpr const char* computeShaderFilename = "projects/program/source/2compute_screen/new_visual.comp";
-#elif defined _WIN32
-    static constexpr const char* computeShaderFilename = "C:/CTools/Projects/main/projects/program/source/2compute_screen/compute_screen.comp";
-#endif
 
 
     markstr("compute_shader_render_to_screen begin");
@@ -115,6 +111,7 @@ i32 compute_shader_render_to_screen()
         __scast(u16, simulationDimensions.y),
         AWC2WindowDescriptor{}
     };
+    awc2WindowDescriptorDefault(&ctxtinfo.winDesc);
     awc2initializeContext(&ctxtinfo);
     awc2setContextUserCallbackMouseButton(contextid, &custom_mousebutton_callback);
     markstr("AWC2 init end");

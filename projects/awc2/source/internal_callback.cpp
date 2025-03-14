@@ -4,6 +4,7 @@
 #include "internal_instance.hpp"
 #include "internal_state.hpp"
 
+
 #include <util/marker2.hpp>
 #ifdef __linux__ /* Happens to be that glext.h has snuck into my codebase so I disable it */
 #	define GL_GLEXT_LEGACY /* https://fsunuc.physics.fsu.edu/git/gwm17/glfw/commit/8db1528c7496bb36884ee93791091d5eb186e6cd */

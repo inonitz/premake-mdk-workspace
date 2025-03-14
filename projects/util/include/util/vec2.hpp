@@ -2,8 +2,7 @@
 #define __UTIL_VECTOR_MATH_LIBRARY2__
 #include "util.hpp"
 #include "ifcrash.hpp"
-#include <xmmintrin.h>
-#include <emmintrin.h>
+#include <nmmintrin.h>
 #include <array>
 
 
@@ -73,7 +72,7 @@ struct UTIL_API vec##fmt \
     explicit vec##fmt(const type_t* validAddr); \
     explicit vec##fmt(type_t value) : mem(value) {} \
     declare_n_args_ctor \
-    vec##fmt(ArrayType  const& arr) : vec##fmt(arr.data()) {} \
+    vec##fmt(ArrayType const& arr) : vec##fmt(arr.data()) {} \
     vec##fmt(__Mem const& vec) : mem(vec) {} \
 	vec##fmt(vec##fmt   const& cpy) : mem(cpy.mem) {} \
     vec##fmt& operator=(const vec##fmt& cpy); \
@@ -115,13 +114,13 @@ struct UTIL_API vec##fmt \
 }; \
 \
 \
-vec##fmt::__Mem& operator*(type_t a, vec##fmt const& b); \
-vec##fmt::__Mem& operator-(vec##fmt const& b); \
-type_t dot(vec##fmt const& a, vec##fmt const& b); \
+UTIL_API vec##fmt::__Mem& operator*(type_t a, vec##fmt const& b); \
+UTIL_API vec##fmt::__Mem& operator-(vec##fmt const& b); \
+UTIL_API type_t dot(vec##fmt::cref a, vec##fmt::cref b); \
 
 
-#define DEFINE_CROSSPROD_FUNC(type_t, fmt) vec##fmt::__Mem& cross(vec##fmt const& a, vec##fmt const& b);
-#define DEFINE_ROTATE_FUNC(type_t, fmt)    vec##fmt::__Mem& rotate(vec##fmt const& v, vec##fmt const& unit, f32 theta);
+#define DEFINE_CROSSPROD_FUNC(type_t, fmt) UTIL_API vec##fmt::__Mem& cross(vec##fmt const& a, vec##fmt const& b);
+#define DEFINE_ROTATE_FUNC(type_t, fmt)    UTIL_API vec##fmt::__Mem& rotate(vec##fmt const& v, vec##fmt const& unit, f32 theta);
 
 
 

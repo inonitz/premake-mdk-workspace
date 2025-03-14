@@ -1,5 +1,6 @@
 #ifndef __UTIL_HEADER__
 #define __UTIL_HEADER__
+#include "util_api.h"
 #include "macro.h"
 #include "types.hpp"
 

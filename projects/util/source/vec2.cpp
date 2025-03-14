@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdio>
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 
 namespace util::math {
@@ -211,7 +211,7 @@ vec##fmt::__Mem& rotate(vec##fmt const& v, vec##fmt const& unit, f32 theta) { \
 } \
 
 
-DEFINE_IMPL_VECTOR_STRUCTURE(f32, 2f, "vec2f %p: ( %8.4f, %8.4f )"              , (void*)begin(), x, y)
+DEFINE_IMPL_VECTOR_STRUCTURE(f32, 2f, "vec2f %p: ( %8.4f, %8.4f )",				  (void*)begin(), x, y)
 DEFINE_IMPL_VECTOR_STRUCTURE(u32, 2u, "vec2u %p: ( %5u, %5u )"                  , (void*)begin(), x, y)
 DEFINE_IMPL_VECTOR_STRUCTURE(i32, 2i, "vec2i %p: ( %5d, %5d )"                  , (void*)begin(), x, y)
 DEFINE_IMPL_VECTOR_STRUCTURE(f32, 4f, "vec4f %p: ( %8.4f, %8.4f, %8.4f, %8.4f )", (void*)begin(), x, y, z, w)
@@ -286,6 +286,13 @@ char* mat4f::to_string() const
         row[3].x, row[3].y, row[3].z, row[3].w
     );
     return strBuffer;
+}
+
+
+mat4f::__Mem& operator*(float a, mat4f const& b)
+{
+	mul(b.mem, a, temporaryBufferMat4f);
+	return temporaryBufferMat4f;
 }
 
 

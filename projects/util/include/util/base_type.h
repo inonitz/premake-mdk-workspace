@@ -5,6 +5,7 @@
 
 typedef unsigned char byte;
 typedef signed char   char_t;
+typedef byte     bool_t;
 typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;

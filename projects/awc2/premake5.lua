@@ -14,11 +14,12 @@ project "awc2"
     -- Specify Include Headers
     includedirs { "include" }
     IncludeProjectHeaders("util")
+    IncludeProjectHeaders("glfw-3.4")
     IncludeProjectHeaders("glbinding")
     IncludeProjectHeaders("glbinding-aux")
     IncludeProjectHeaders("imgui")
-    IncludeGLFWDirectory()
 
+    
     -- Build Directories &// Structure
     SetupBuildDirectoriesForLibrary()
 
@@ -32,9 +33,9 @@ project "awc2"
     -- Linking Options
     LinkToStandardLibraries()
     LinkUtilLibrary()
+    LinkGLFWLibrary()
     LinkGLBindingLibraries()
     LinkImGuiLibrary()
-    LinkGLFWLibrary()
     
     -- Macros
     filter { "configurations:*Lib" }

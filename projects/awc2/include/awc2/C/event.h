@@ -1,10 +1,11 @@
 #ifndef __AWC2_C_EVENT_INTERFACE_HEADER__
 #define __AWC2_C_EVENT_INTERFACE_HEADER__
-#include <util/static_assert.h>
 #include "input.h"
 
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 
 typedef struct GLFWwindow GLFWwindow;
@@ -34,7 +35,7 @@ typedef struct __awc2_user_callback_winfocus_struct
 {
     GLFWwindow* window;
     u8          context_id;
-    bool        focused;
+    bool_t      focused;
     u8 reserved[6];
 } AWC2User_callback_winfocus_struct;
 
@@ -84,7 +85,9 @@ typedef void (*AWC2User_callback_mouse_scroll)(AWC2User_callback_mousescroll_str
 typedef void (*AWC2User_callback_mouse_button)(AWC2User_callback_mousebutton_struct const*);
 
 
+#ifdef __cplusplus
 } /* extern "C" */
+#endif
 
 
 #endif /* __AWC2_C_EVENT_INTERFACE_HEADER__ */

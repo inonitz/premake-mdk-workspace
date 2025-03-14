@@ -30,31 +30,38 @@ end
 PROJECT_DIR     = ROOT_PATH("projects")
 DEPENDENCY_DIR  = ROOT_PATH("dependencies")
 WORKSPACE_NAME  = "example-awc2-program"
-START_PROJECT   = "program-test"
+START_PROJECT   = "program"
 
 
 BUILD_BINARY_DIRECTORY_GENERIC = "/build/bin/%{cfg.buildcfg}_%{cfg.platform}_%{prj.name}"
 BUILD_OBJECT_DIRECTORY_GENERIC = "/build/obj/%{cfg.buildcfg}_%{cfg.platform}_%{prj.name}"
 BUILD_BINARY_DIRECTORY = "/build/bin/%{cfg.buildcfg}_%{cfg.platform}"
+BUILD_BINARY_DIRECTORY_ABSOLUTE = _MAIN_SCRIPT_DIR .. BUILD_BINARY_DIRECTORY
 
 
 SpecifyGlobalProjectCXXVersion = function()
-    language "C++"
-    cppdialect "C++17"
-    filter "files:**.c"
-        buildoptions { "-std=c11" }
-    filter "files:**.cpp"
-        buildoptions { "-std=c++17" }
-    filter ""
-
-    filter "toolset:gcc"
+--     filter "toolset:not gcc"
+--         filter "files:**.c"
+--             buildoptions { "-std=c11" }
+--         filter "files:**.cpp"
+--             buildoptions { "-std=c++17" }
+--     filter ""
+--     filter "toolset:gcc"
+--         filter "files:**.c"
+--             buildoptions { "-std=gnu11" }
+--         filter "files:**.cpp"
+--             buildoptions { "-std=gnu++17" }
+--     filter ""
+--     filter {}
+    filter { "toolset:not gcc" }
+        cdialect "C11"
+        cppdialect "C++17"
+    filter { "toolset:gcc" }
+        cdialect "gnu11"
         cppdialect "gnu++17"
-        filter "files:**.c"
-            buildoptions { "-std=gnu11" }
-        filter "files:**.cpp"
-            buildoptions { "-std=gnu++17" }
-    filter ""
     filter {}
+
+
 end
 
 
@@ -89,26 +96,7 @@ end
 
 
 
--- -- The reason for this hideous mess: https://groups.google.com/g/llvm-dev/c/WA1vKn9zDtM
--- -- Also, clang doesn't pass either '-nodefaultlibs' nor '-fms-runtime-lib',
--- -- (atleast when using -fuse-ld=lld-link) so It so happens that I ALWAYS link against static libraries of the CRT
--- LinkToStandardLibraries = function()
---     filter { "system:windows", "action:vs2022", "configurations:*Lib" }
---         staticruntime "on"
---     filter { "system:windows", "action:gmake2", "configurations:*Lib" }
---         buildoptions { "-static-libgcc",  "-static-libstdc++" }
-
-
---     filter { "system:windows", "action:vs2022", "configurations:*Dll" }
---         staticruntime "Off"
---     filter { "system:windows", "action:gmake2", "configurations:DebugDll" }
---         linkoptions { "-Wl,/nodefaultlib,kernel32.lib,ucrtd.lib,vcruntimed.lib,msvcrtd.lib,msvcprtd.lib" }
---     filter { "system:windows", "action:gmake2", "configurations:ReleaseDll" }
---         linkoptions { "-Wl,/nodefaultlib,kernel32.lib,ucrt.lib,vcruntime.lib,msvcrt.lib,msvcprt.lib" }
---     filter {}
--- end
-
-
+-- The reason for this mess: https://groups.google.com/g/llvm-dev/c/WA1vKn9zDtM
 LinkToStandardLibraries = function()
     -- Directly Taken from: https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170
     -- Static Debug:
@@ -148,32 +136,6 @@ LinkToStandardLibraries = function()
 end
 
 
-IncludeGLFWDirectory = function()
-    includedirs { DEPENDENCY_DIR .. "/GLFW/include" }
-end
-
-GetGLFWLibraryPath = function()
-    return DEPENDENCY_DIR .. "/GLFW/windows/%{cfg.architecture}/lib-vc2022"
-end
-
-LinkGLFWLibrary = function()
-    filter "system:windows"
-        libdirs { GetGLFWLibraryPath() }
-    filter ""
-    filter { "system:windows", "configurations:*Lib" }
-        links { "glfw3_mt" }
-        links { "user32" }
-    filter { "system:windows", "configurations:*Dll" }
-        links { "glfw3dll" }
-        defines { "GLFW_DLL" }
-    filter {}
-    filter "system:linux" -- requires the following packages [debian]: apt-get install libglfw3 libglfw3-dev libgl-dev 
-        links { "glfw" }
-    filter ""
-    filter {}
-end
-
-
 
 
 -- try to use these generic functions to include & link every project, right now the only ones popping up on program is glfw (also for awc2 ...)
@@ -191,6 +153,24 @@ LinkUtilLibrary = function()
     LinkProjectLibrary("util")
     filter { "configurations:*Lib" }
         defines { "UTIL_STATIC_DEFINE" }
+    filter {}
+end
+
+LinkGLFWLibrary = function()
+    LinkProjectLibrary("glfw34")
+    filter { "system:windows", "configurations:*Lib" }
+        links { 
+            "user32",
+            "imm32",
+            "gdi32",
+            "shell32"
+        }
+    filter { "system:linux", "configurations:*Lib" }
+        links { 
+            "pthread",
+            "dl", 
+            "X11", 
+        }
     filter {}
 end
 
@@ -347,7 +327,7 @@ newaction {
 
 -- Clean Specific System--Architecture Build Function [TODO] --
 newaction {
-    trigger     = "CleanBuild[TODO]",
+    trigger     = "CleanArch[TODO]",
     description = "Delete All Debug & Release files generated for a specific system-architecture (e.g windows-x86_64)",
     execute     = function ()
         os.remove("build/bin/Debug-") 
@@ -408,13 +388,26 @@ newaction {
 
 
 newaction {
-    trigger     = "buildall",
-    description = "Trigger the following actions: export-compile-commands, gmake2",
+    trigger     = "buildalldbg",
+    description = "Trigger the following actions: export-compile-commands, gmake2, make config=debuglib_amd64",
     execute = function()
         print("[ACTION] = [buildall] Begin\n")
         os.execute("premake5 export-compile-commands")
         os.execute("premake5 gmake2")
         os.execute("make config=debuglib_amd64 -j 16")
+        print("[ACTION] = [buildall] End\n")
+    end
+}
+
+
+newaction {
+    trigger     = "buildallrel",
+    description = "Trigger the following actions: export-compile-commands, gmake2, make config=releaselib_amd64",
+    execute = function()
+        print("[ACTION] = [buildall] Begin\n")
+        os.execute("premake5 export-compile-commands")
+        os.execute("premake5 gmake2")
+        os.execute("make config=releaselib_amd64 -j 16")
         print("[ACTION] = [buildall] End\n")
     end
 }

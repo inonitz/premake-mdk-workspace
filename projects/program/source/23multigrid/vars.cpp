@@ -176,6 +176,7 @@ void initializeLibrary()
         desc
     };
     awc2initializeContext(&ctxtinfo);
+    awc2WindowDescriptorDefault(&ctxtinfo.winDesc);
     awc2setContextUserCallbackMouseButton  (g_contextid, &custom_mousebutton_callback);
     awc2setContextUserCallbackWindowFocus  (g_contextid, &custom_winfocus_callback);
     awc2setContextUserCallbackWindowSize   (g_contextid, &custom_winsize_callback);

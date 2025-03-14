@@ -56,31 +56,31 @@ AWC2_EXTERNC void awc2newframe() {
 
 
 /* namespace AWC2::Input { */
-AWC2_EXTERNC bool awc2isKeyPressed(AWC2KeyCode key) {
-    return AWC2::Input::isKeyPressed(AWC2::Input::keyCode{key});
+AWC2_EXTERNC bool_t awc2isKeyPressed(AWC2KeyCode key) {
+    return AWC2::Input::isKeyPressed(__scast(AWC2::Input::keyCode, key));
 }
 
-AWC2_EXTERNC bool awc2isKeyReleased(AWC2KeyCode key) {
-    return AWC2::Input::isKeyReleased(AWC2::Input::keyCode{key});
+AWC2_EXTERNC bool_t awc2isKeyReleased(AWC2KeyCode key) {
+    return AWC2::Input::isKeyReleased(__scast(AWC2::Input::keyCode, key));
 }
 
-AWC2_EXTERNC bool awc2isKeyRepeated(AWC2KeyCode key) {
-    return AWC2::Input::isKeyRepeated(AWC2::Input::keyCode{key});
+AWC2_EXTERNC bool_t awc2isKeyRepeated(AWC2KeyCode key) {
+    return AWC2::Input::isKeyRepeated(__scast(AWC2::Input::keyCode, key));
 }
 
-AWC2_EXTERNC bool awc2isMouseButtonPressed (AWC2MouseButton mb) {
-    return AWC2::Input::isMouseButtonPressed(AWC2::Input::mouseButton{mb});
+AWC2_EXTERNC bool_t awc2isMouseButtonPressed (AWC2MouseButton mb) {
+    return AWC2::Input::isMouseButtonPressed(__scast(AWC2::Input::mouseButton, mb));
 }
 
-AWC2_EXTERNC bool awc2isMouseButtonReleased(AWC2MouseButton mb) {
-    return AWC2::Input::isMouseButtonReleased(AWC2::Input::mouseButton{mb});
+AWC2_EXTERNC bool_t awc2isMouseButtonReleased(AWC2MouseButton mb) {
+    return AWC2::Input::isMouseButtonReleased(__scast(AWC2::Input::mouseButton, mb));
 }
 
-AWC2_EXTERNC bool awc2isMouseMoving() {
+AWC2_EXTERNC bool_t awc2isMouseMoving() {
     return AWC2::Input::isMouseMoving();
 }
 
-AWC2_EXTERNC bool awc2isMouseScrollMoving() {
+AWC2_EXTERNC bool_t awc2isMouseScrollMoving() {
     return AWC2::Input::isMouseScrollMoving();
 }
 
@@ -106,7 +106,7 @@ AWC2_EXTERNC AWC2CursorPosition awc2getMousePositionDelta() {
 }
 
 AWC2_EXTERNC void awc2setCursorMode(AWC2CursorMode mode) {
-    AWC2::Input::setCursorMode(AWC2::Input::cursorMode{mode});
+    AWC2::Input::setCursorMode(__scast(AWC2::Input::cursorMode, mode));
     return;
 }
 /* } */
@@ -133,7 +133,7 @@ AWC2_EXTERNC void awc2initializeContext(AWC2ContextDescriptor const* ctxt)
         AWC2::WindowDescriptor{
             ctxt->winDesc.framebufferChannels,
             ctxt->winDesc.refreshRate,
-            AWC2::WindowCreationFlag{ctxt->winDesc.createFlags}
+            __scast(AWC2::WindowCreationFlag, ctxt->winDesc.createFlags)
         }
     };
     AWC2::initializeContext(cppdesc);
@@ -168,7 +168,7 @@ AWC2_EXTERNC void awc2getActiveContextList(AWC2ContextVector* outbuf)
     return;
 }
 
-AWC2_EXTERNC __hot bool awc2getContextStatus(AWC2ContextID id) 
+AWC2_EXTERNC __hot bool_t awc2getContextStatus(AWC2ContextID id) 
 {
     return AWC2::getContextStatus(id);
 }

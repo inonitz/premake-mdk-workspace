@@ -6,6 +6,8 @@ layout (binding = 1, rgba32f) writeonly uniform image2D renderto;
 void main()
 {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    imageStore(renderto, texelCoord, vec4(1.0f, 0.0, 0.0f, 1.0f));
+
+    vec2 color_rg = vec2(texelCoord) / vec2( imageSize(renderto) );
+    imageStore(renderto, texelCoord, vec4(color_rg, 0, 0));
     return;
 }

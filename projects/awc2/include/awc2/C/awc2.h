@@ -26,13 +26,13 @@ AWC2_API void awc2newframe();
 
 /* input.hpp */
 /* namespace AWC2::Input { */
-AWC2_API bool awc2isKeyPressed(AWC2KeyCode key);
-AWC2_API bool awc2isKeyReleased(AWC2KeyCode key);
-AWC2_API bool awc2isKeyRepeated(AWC2KeyCode key);
-AWC2_API bool awc2isMouseButtonPressed (AWC2MouseButton mb);
-AWC2_API bool awc2isMouseButtonReleased(AWC2MouseButton mb);
-AWC2_API bool awc2isMouseMoving();
-AWC2_API bool awc2isMouseScrollMoving();
+AWC2_API bool_t awc2isKeyPressed(AWC2KeyCode key);
+AWC2_API bool_t awc2isKeyReleased(AWC2KeyCode key);
+AWC2_API bool_t awc2isKeyRepeated(AWC2KeyCode key);
+AWC2_API bool_t awc2isMouseButtonPressed (AWC2MouseButton mb);
+AWC2_API bool_t awc2isMouseButtonReleased(AWC2MouseButton mb);
+AWC2_API bool_t awc2isMouseMoving();
+AWC2_API bool_t awc2isMouseScrollMoving();
 AWC2_API AWC2CursorPosition awc2getMouseScrollOffset();
 AWC2_API AWC2CursorPosition awc2getMousePosition();
 AWC2_API AWC2CursorPosition awc2getMousePositionDelta();
@@ -47,7 +47,7 @@ AWC2_API void                    awc2destroyContext(AWC2ContextID id);
 AWC2_API void                    awc2initializeContext(AWC2ContextDescriptor const* ctxt);
 AWC2_API void                    awc2closeContext(AWC2ContextID id);
 AWC2_API void                    awc2getActiveContextList(AWC2ContextVector* outbuf);
-AWC2_API __hot bool              awc2getContextStatus(AWC2ContextID id); /* If context is closed or not */
+AWC2_API __hot bool_t              awc2getContextStatus(AWC2ContextID id); /* If context is closed or not */
 AWC2_API __hot void              awc2setCurrentContext(AWC2ContextID id);
 AWC2_API __hot AWC2ContextID     awc2getCurrentContext();
 AWC2_API __hot AWC2ViewportSize  awc2getCurrentContextViewport();

@@ -1,7 +1,8 @@
 #ifndef __UTIL_GENERIC_VECTOR_BUFFER__
 #define __UTIL_GENERIC_VECTOR_BUFFER__
-#include "util/macro.h"
-#include "util/base_type.h"
+#include "util_api.h"
+#include "macro.h"
+#include "base_type.h"
 #include <stdlib.h>
 #include <stdio.h>
 

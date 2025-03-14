@@ -1,7 +1,6 @@
 #include "awc2/entry.hpp"
 #include "internal_instance.hpp"
 #include "internal_state.hpp"
-#include "util/macro.h"
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <util/marker2.hpp>

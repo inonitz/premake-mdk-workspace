@@ -1,5 +1,6 @@
 #ifndef __AWC2_EVENT_INTERFACE_HEADER__
 #define __AWC2_EVENT_INTERFACE_HEADER__
+#include <util/static_assert.h>
 #include "C/awc2_api.h"
 #include "input_types.hpp"
 

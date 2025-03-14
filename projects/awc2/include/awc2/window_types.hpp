@@ -2,6 +2,7 @@
 #define __AWC2_WINDOW_TYPES_HEADER__
 #include <util/macro.h>
 #include <util/base_type.h>
+#include <util/static_assert.h>
 
 
 namespace AWC2 {

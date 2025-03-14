@@ -19,17 +19,17 @@
 
 #   else /* Post C++11, we can use static_assert */
 #       define UTIL_STATIC_ASSERT(Condition, UniqueID, Message) \
-                static_assert(Condition, Message);
+                static_assert(Condition, Message); \
 
 #   endif
 #elif defined __STDC_VERSION__
 #   if __STDC_VERSION__ < 201112L /* pre C11, we'll use the default macro */
 #       define UTIL_STATIC_ASSERT(Condition, UniqueID, Message) \
-                _Static_assert(Condition, Message);
+                DEFAULT_STATIC_ASSERT_IMPL(Condition, UniqueID, Message)
 
 #   else /* post C11, we can use _Static_assert */
 #       define UTIL_STATIC_ASSERT(Condition, UniqueID, Message) \
-                DEFAULT_STATIC_ASSERT_IMPL(Condition, UniqueID, Message)
+                _Static_assert(Condition, Message);
 
 #   endif
 #endif

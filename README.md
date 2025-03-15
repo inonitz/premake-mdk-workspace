@@ -8,43 +8,56 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-<h3 align="center">Multi-Project Workspace Template</h3>
+<h3 align="center">2D Incompressible Fluid Simulation</h3>
 
   <p align="center">
-    C/C++ Cross-Platform Multi-Project Template
-    <br />
+    Implementation of </br>
+      <a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">
+        Chapter 38. Fast Fluid Dynamics Simulation on the GPU
+    </a> 
   </p>
 </div>
 
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-I needed to manage multiple projects in a single cross-platform-workspace with easy integration to clangd  
-I had multiple options:
-* Makefile - Will not go back to those
-* **[cmake](https://cmake.org/)**           - Industry standard, should've probably used that
-* **[xmake](https://github.com/xmake-io)**  - I didn't need an alternative to CMAKE
-* **[premake](https://premake.github.io/)** - A meta build system with lua syntax (also like xmake, except more barebones)
+The following code simulates a 2D Incompressible Fluid using an:
+* Eulerian-Grid Scheme
+* Semi-lagrangian Advection Method [Unconditionally Stable]
+* System-of-Equations Jacobi Method Solver [Very easy to implement GPGPU]
+* Central Difference for Approximating Calculus Operators [O(x^2) Error]
 
-Equipped with a new tool, I started migrating my previous **[project](https://github.com/inonitz/makefile-library-template)** because recompilation targets were non-existent
+**Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)
+
 <br>
-    ***This project is the result!***
+
+The currently most-updated revision ```23multigrid/``` features the following:
+* Force/Dye/Force-Dye User-Simulation Interaction
+* Vorticity Confinement with variable coefficient
+* Variable Kinematic Viscosity, Delta Time & Poisson-Solver Iterations
+* Real-Time CFL/Reynolds Number Calculations (they're there to check solver correctness/stability)
+* Visualizations of Calculation Textures, in particular Force/Dye/Curl/Absolute Curl/Velocity Error/Pressure Error
+* Real-Time Measurements of internal solver components:
+  * **Due to performance investigations, I came to a conclusion that OpenGL fills a command-buffer, which is then dispatched only on glfwSwapBuffers()**
+  * **Therefore, if ```FrameTime = 9.8ms``` != ```Sum(All_Other_Timers)``` =>**
+    * **```Remaining Time``` = GPU-Time Required to do the work + Ensuring CPU-Side Buffer Visiblity**
+
 </br>
+
+### Pretty Pictures
+Tomorrow, Im Tired lol :)
+
+
+</br>
+
+  
 ### Project Structure
-Each Project contains a ```premake5.lua``` file, describing everything about its compilation/linking
-**There are 5 sub-projects available as reference/guiding points if you don't understand the Explanation below**
+The Underlying Project Structure uses my [premake5-workspace-template](https://github.com/inonitz/premake5-workspace-template) repo,  
+You can expect the [```program/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program) folder to occupy all revisions of the fluid-solver,   
+culminating eventually with [```23multigrid/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program/source/23multigrid) as the currently best revision
 <br>
 <br>
-* To add a project to compilation/linking:
-    * Add the path at ```projects/lua```
-    * Specify a LinkMyLibraryName function at the root ```premake5.lua``` file (see ```LinkImGuiLibrary()``` for more info)
-    * Use ```IncludeProjectHeaders(...)``` & ```LinkMyLibraryName``` in your library/executable' premake5.lua 
-* To add a dependency to compilation/linking:
-    * Add your library to the folder ```dependencies/```
-    * Specify 2 functions at the root ```premake5.lua``` file:
-        * LinkMyLibraryName
-        * IncludeProjectHeaders
-    * Use The defined functions in your library/executable' premake5.lua 
+<br>
 
 
 ### Built With
@@ -58,13 +71,14 @@ Each Project contains a ```premake5.lua``` file, describing everything about its
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Prerequisites
+### Prerequisites - Instructions below work too, but you should follow [premake5-workspace-template](https://github.com/inonitz/premake5-workspace-template)
 * [premake](https://premake.github.io/docs/) 
 * Working compiler toolchain, preferably clang
   * Windows: You should use [llvm](https://github.com/llvm/llvm-project/releases)
   * Linux:
       1. [installing-specific-llvm-version](https://askubuntu.com/questions/1508260/how-do-i-install-clang-18-on-ubuntu)
       2. [configuring-symlinks](https://unix.stackexchange.com/questions/596226/how-to-change-clang-10-llvm-10-etc-to-clang-llvm-etc)
+      3. **You Don't have to use LLVM, gcc works too**
   * Define these environment variables (in your PATH):
     * LLVMInstallDir
     * LLVMToolsVersion
@@ -72,52 +86,48 @@ Each Project contains a ```premake5.lua``` file, describing everything about its
 
 
 ### Installation
-#### There are 2 branches available:
-* **with-subprojects** - Includes ImGui, GLFW, glbinding, awc2 and a sample program at *program/*
-* **barebones** - Executable-With-Library Samples, including reference premake files for: 
-    * ImGui
-    * GLFW
-    * glbinding
-    * awc2
-```sh
-# If you want everything
-git clone -b with-subprojects https://github.com/inonitz/premake5-workspace-template.git
-# If you prefer to configure on your own
-git clone -b barebones https://github.com/inonitz/premake5-workspace-template.git
-# Don't forget to add your own remote repo
-git remote set-url origin your_github_username/premake5-workspace-template
-git remote -v
-```
+Just Clone the repo
+
+<br>
+
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
-call ```premake5 help``` in the cloned repo directory ```(.vscode/..)```
-
-### Common Commands:
+### Build Process
 ```sh
-    premake5 --proj=program cleanproj 
-    premake cleanall 
-    premake cleancfgs
-    premake cleanclangd
-    premake export-compile-commands
-    premake --os=windows --arch=x86_64 --cc=clang gmake2
-    premake --os=windows --arch=x86_64 --cc=clang vs2022
-    premake --os=linux --arch=x86_64 --cc=clang gmake2
+premake5 --os=windows --arch=x86_64 --cc=clang gmake2
+premake5 --os=windows --arch=x86_64 --cc=clang vs2022
+premake5 --os=linux   --arch=x86_64 --cc=gcc   gmake2
+premake5 --os=linux   --arch=x86_64 --cc=clang gmake2
 ```
+You can also use this command to perform the whole build process,  
+if youre using gmake2 and a commandline:  
+```sh
+premake5 --os=windows/linux --arch=x86_64 buildallrel
+```
+**Dont forget to actually build using your favorite IDE/command-line utility**
 
+<br>
 
+### Execution
+**Static Library Builds: (premake5 gmake2, config=releaselib_amd64)**
+```sh
+./build/bin/ReleaseLib_amd64_program/program
+```  
+**DLL/Shared Library Builds: (premake5 gmake2, config=releasedll_amd64)**
+```sh
+./build/bin/ReleaseLib_amd64/program
+```
+**Visual Studio 2022 - Just Run normally using ```Local Windows Debugger```**
 
 <!-- ROADMAP -->
 ## Roadmap
-- Adding an option to delete files based on architecture (e.g ```cleanarch --arch='x'```)
-- Premake should be able to generate vs2022 files. This premake project can't do that
-- Optimization of execution time:
-  * ```with-subprojects``` branch
-    * ~7sec [windows] 
-    * ~4sec [wsl2] 
-  * ```barebones``` branch
-    * ~242ms [windows]
+- Replacing Jacobi Method with the Multigrid Method for better performance & faster fluid convergence
+- Adding Arbitrary boundaries
+- Extending to 3D
+- MAC Staggered Grid
+- Improving Simulation Accuracy
+- Extending to compressible/Turbulent Models
 
 
 <!-- CONTRIBUTING -->

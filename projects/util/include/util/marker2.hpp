@@ -36,6 +36,7 @@
 
 
 #if MARKER_FLAG_DEFINE_IMPLEMENTATION == 1
+#include "util_api.h"
 #include "macro.h"
 
 

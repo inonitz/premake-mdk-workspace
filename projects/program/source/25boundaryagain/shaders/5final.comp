@@ -1,0 +1,61 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D intermediate; /* [ w.x, w.y, new_p, div(p) ]*/
+layout(binding = 1, rgba32f) writeonly uniform image2D   updatedFields;
+layout(binding = 2)                    uniform sampler2D boundaryBitmap; 
+
+
+
+bool isBoundary(ivec2 coords);
+vec2 PressureGradient2(
+    in sampler2D tex,
+    in ivec2     texel,
+    in vec2      dx_dy
+);
+
+
+uniform vec2  ku_simUnitCoord;
+uniform ivec2 ku_simdims;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    if(isBoundary(texelCoord))
+        return;
+    
+
+    vec2 pGrad   = PressureGradient2(intermediate, texelCoord, ku_simUnitCoord);
+    vec4 valueij = texelFetch(intermediate, texelCoord, 0) - vec4(pGrad, 0, 0);
+    imageStore(updatedFields, texelCoord, valueij);
+    return;
+}
+
+
+bool isBoundary(ivec2 coords) {
+    int _flat = coords.y + coords.x * ku_simdims.x;
+    if(_flat < 0 || _flat > ku_simdims.x * ku_simdims.y - 1) {
+        return true;
+    }
+    return texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+}
+
+
+vec2 PressureGradient2(
+    in sampler2D tex,
+    in ivec2     texel,
+    in vec2      dx_dy
+) {
+    vec2 result = vec2(0);
+    vec4 neighbours = vec4(
+        float(!isBoundary(texel + ivec2(1, 0))) * texelFetch(tex, texel + ivec2(1, 0), 0).z,
+        float(!isBoundary(texel - ivec2(1, 0))) * texelFetch(tex, texel - ivec2(1, 0), 0).z,
+        float(!isBoundary(texel + ivec2(0, 1))) * texelFetch(tex, texel + ivec2(0, 1), 0).z,
+        float(!isBoundary(texel - ivec2(0, 1))) * texelFetch(tex, texel - ivec2(0, 1), 0).z
+    );
+
+    dx_dy = vec2(0.5f) / dx_dy;
+    result.x = dx_dy.x * (neighbours[0] - neighbours[1]);
+    result.y = dx_dy.y * (neighbours[2] - neighbours[3]);
+    return result;
+}

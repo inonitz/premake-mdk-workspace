@@ -377,8 +377,42 @@ DEFINE_CROSSPROD_FUNC(i32, 3i)
 
 
 
+template<typename T> struct UTIL_API matrixView {
+    using cref = matrixView const&;
 
-struct mat2f 
+
+	T* m_buf;
+	i32 m_rows; 
+	i32 m_columns;
+
+
+    matrixView() : m_buf(nullptr) {}
+    explicit matrixView(T* validAddr, i32 rows, i32 columns) {
+		m_buf 	  = validAddr;
+		m_rows 	  = rows;
+		m_columns = columns;
+		return;
+	}
+	matrixView(matrixView const& cpy) : 
+		matrixView{ cpy.m_buf, cpy.m_rows, cpy.m_columns} {}
+    matrixView& operator=(const matrixView& cpy) {
+		m_buf 	  = cpy.m_buf;
+		m_rows    = cpy.m_rows;
+		m_columns = cpy.m_columns;
+		return *this;
+	}
+    T&       operator[](i32 idx)       { return m_buf[idx]; }
+    const T& operator[](i32 idx) const { return m_buf[idx]; }
+    T&       operator()(i32 i, i32 j)       { return m_buf[j + i * m_rows]; }
+    const T& operator()(i32 i, i32 j) const { return m_buf[j + i * m_rows]; }
+    T&       operator()(vec2i const& idx)       { return m_buf[idx.j + idx.i * m_rows]; }
+    const T& operator()(vec2i const& idx) const { return m_buf[idx.j + idx.i * m_rows]; }
+};
+
+
+
+
+struct UTIL_API mat2f 
 {
     using __Arr = std::array<float, 4>;
 	using __Mem = Vector<float, 4>;
@@ -437,12 +471,12 @@ struct mat2f
 	constexpr size_t length() const { return mem.len();   }
 	char* 		  to_string() const;
 };
-mat2f::__Mem& operator*(float a, mat2f const& b);
+UTIL_API mat2f::__Mem& operator*(float a, mat2f const& b);
 
 
 
 
-struct mat4f 
+struct UTIL_API mat4f 
 {
 	using __Mem = Vector<float, 16>;
 	using __Arr = std::array<float, 16>;
@@ -535,14 +569,14 @@ struct mat4f
 	constexpr u64 length() const { return mem.len();    }
 	char* to_string() const;
 };
-mat4f::__Mem& operator*(float a, mat4f const& b);
+UTIL_API mat4f::__Mem& operator*(float a, mat4f const& b);
 DISABLE_WARNING_POP
 
 
-void Multiply(vec4f const& a, mat4f const& b, vec4f& out);
-void Multiply(mat4f const& a, mat4f const& b, mat4f& out);
-void Multiply(vec2f const& a, mat2f const& b, vec2f& out);
-void Multiply(mat2f const& a, mat2f const& b, mat2f& out);
+UTIL_API void Multiply(vec4f const& a, mat4f const& b, vec4f& out);
+UTIL_API void Multiply(mat4f const& a, mat4f const& b, mat4f& out);
+UTIL_API void Multiply(vec2f const& a, mat2f const& b, vec2f& out);
+UTIL_API void Multiply(mat2f const& a, mat2f const& b, mat2f& out);
 
 
 /*
@@ -552,7 +586,7 @@ void Multiply(mat2f const& a, mat2f const& b, mat2f& out);
 	[ 0, 0, 1, 0 ],
 	[ 0, 0, 0, 1 ]
 */
-void identity  (mat4f& out);
+UTIL_API void identity  (mat4f& out);
 
 
 /*
@@ -562,7 +596,7 @@ void identity  (mat4f& out);
 	[ 0, 0, 1, t.z ],
 	[ 0, 0, 0, 1   ]
 */
-void translate (vec3f const& translate, mat4f& out);
+UTIL_API void translate (vec3f const& translate, mat4f& out);
 
 
 /*
@@ -572,7 +606,7 @@ void translate (vec3f const& translate, mat4f& out);
 	[  0,  0,  s.z,  0 ],
 	[  0,  0,   0,   1 ]
 */
-void scale(vec3f const& scale, mat4f& out);
+UTIL_API void scale(vec3f const& scale, mat4f& out);
 
 
 /*
@@ -580,7 +614,7 @@ void scale(vec3f const& scale, mat4f& out);
 	[ s.x,  0  ],
 	[  0,  s.y ]
 */
-void scale(vec2f const& scale, mat2f& out);
+UTIL_API void scale(vec2f const& scale, mat2f& out);
 
 
 /*
@@ -588,7 +622,7 @@ void scale(vec2f const& scale, mat2f& out);
 	[ cos(t), -sin(t) ],
 	[ sin(t),  cos(t) ]
 */
-void rotate(f32 angle, mat2f& out);
+UTIL_API void rotate(f32 angle, mat2f& out);
 
 
 /*
@@ -596,7 +630,7 @@ void rotate(f32 angle, mat2f& out);
 	[TODO FINISH]
 	[link]: https://upload.wikimedia.org/math/f/b/a/fbaee547c3c65ad3d48112502363378a.png
 */
-void rotate(math::vec3f const& axis, f32 angleRadians, mat4f& out);
+UTIL_API void rotate(math::vec3f const& axis, f32 angleRadians, mat4f& out);
 
 /*
 	Returns the following matrix in mat4f& out (where 
@@ -611,13 +645,13 @@ void rotate(math::vec3f const& axis, f32 angleRadians, mat4f& out);
 	[ m02, m06, m10, m14 ],
 	[ m03, m07, m11, m15 ]
 */
-void transposed(mat4f const& in, mat4f& out);
+UTIL_API void transposed(mat4f const& in, mat4f& out);
 
 
 /*
 	Same as tranposed(); Uses temporary mat4f to directly modify inout.
 */
-void transpose (mat4f& inout);
+UTIL_API void transpose (mat4f& inout);
 
 
 /* 
@@ -647,7 +681,7 @@ void transpose (mat4f& inout);
 	[	   0,              0,         -1,         0     ]
 
 */
-void perspective(
+UTIL_API void perspective(
 	float  aspectRatio, 
 	float  fovy, 
 	float  near, 
@@ -664,7 +698,7 @@ void perspective(
 	[   0,     0,     0,        1/m32,      ]
 	[   0,     0,   1/m23, -m22/(m23 * m32) ]
 */
-void inv_perspective(mat4f const& in, mat4f& out);
+UTIL_API void inv_perspective(mat4f const& in, mat4f& out);
 
 
 
@@ -682,7 +716,7 @@ void inv_perspective(mat4f const& in, mat4f& out);
 	[     0,          0,	2/(n - f), (f + n)/(n - f) ],
 	[     0,          0,        0, 	   	      1 	   ]
 */
-void orthographic(
+UTIL_API void orthographic(
 	vec2f  leftRight, 
 	vec2f  topBottom, 
 	vec2f  nearFar,
@@ -693,7 +727,7 @@ void orthographic(
 /*
 	Same as function above, just easier interface.
 */
-void orthographic(
+UTIL_API void orthographic(
 	f32 left,   f32 right, 
 	f32 bottom, f32 top,
 	f32 near,   f32 far,
@@ -743,7 +777,7 @@ void orthographic(
 		[         xaxis.z          yaxis.z          zaxis.z  0 ]
 		[ dot(xaxis,-eye)  dot(yaxis,-eye)  dot(zaxis,-eye)  1 ]
 */
-void lookAt(
+UTIL_API void lookAt(
 	vec3f const& eyePos, 
 	vec3f const& at, 
 	vec3f const& up,
@@ -758,7 +792,7 @@ void lookAt(
 		[ zaxis.x  zaxis.y  zaxis.z  dot(zaxis, eye) ]
 		[    0 	      0 	   0       	    1    	 ]
 */
-void inv_lookAt(
+UTIL_API void inv_lookAt(
 	vec3f const& eyePos, 
 	vec3f const& at, 
 	vec3f const& up,
@@ -769,7 +803,7 @@ void inv_lookAt(
 /* 
 	Source Code: https://github.com/willnode/N-Matrix-Programmer/blob/master/Info/Matrix_4x4.txt
 */
-void inverse(
+UTIL_API void inverse(
 	mat4f const& in,
 	mat4f&       out
 );
@@ -778,7 +812,7 @@ void inverse(
 /*
 	Source (God Bless you!): https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
 */
-void inverseSimd(
+UTIL_API void inverseSimd(
 	mat4f const& in,
 	mat4f& 		 out
 );
@@ -791,7 +825,7 @@ void inverseSimd(
 	[     0,             0, 	    1,  0 ],
 	[     0,             0, 	    0,  1 ]
 */
-void modelMatrix2d(
+UTIL_API void modelMatrix2d(
 	math::vec2f const& translate,
 	math::vec2f const& scale,
 	f32 			   rotationAngle,

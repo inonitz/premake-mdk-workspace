@@ -1,0 +1,98 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D intermediateVelocityField;
+layout (binding = 1)                    uniform sampler2D oldPressureFieldValue;
+layout (binding = 2, rgba32f) writeonly uniform image2D   outputField;
+layout (binding = 3)                    uniform sampler2D boundaryBitmap; 
+layout (binding = 4)                    uniform sampler3D bndQuantity; 
+
+
+
+bool isBoundary(ivec2 coords);
+float FieldDivergence(
+    in ivec2 texCoord
+);
+float simplerDiv(
+    in ivec2     texel,
+    in sampler2D toread
+);
+
+
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+vec2 k_rdxdy = 1.0f / ku_simUnitCoord;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    if(isBoundary(texelCoord))
+        return;
+
+    
+    vec4 result = texelFetch(intermediateVelocityField, texelCoord, 0);
+    result.z = texelFetch(oldPressureFieldValue, texelCoord, 0).z;
+    result.w = FieldDivergence(texelCoord);
+    imageStore(outputField, texelCoord, result);
+    return;
+}
+
+
+bool isBoundary(ivec2 coords) 
+{
+    bool outOfBounds = any(bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    ));
+    bool bitmapSays  = texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+    return outOfBounds || bitmapSays;
+}
+
+
+float FieldDivergence(in ivec2 texCoord) 
+{
+    float result;
+    float boundaryMultipliers[4] = float[4](
+        float( isBoundary(texCoord + ivec2(1, 0) )),
+        float( isBoundary(texCoord - ivec2(1, 0) )),
+        float( isBoundary(texCoord + ivec2(0, 1) )),
+        float( isBoundary(texCoord - ivec2(0, 1) ))
+    );
+    float neighbourValues[4] = float[4](
+        texelFetch(intermediateVelocityField, texCoord + ivec2(1, 0), 0).x,
+        texelFetch(intermediateVelocityField, texCoord - ivec2(1, 0), 0).x,
+        texelFetch(intermediateVelocityField, texCoord + ivec2(0, 1), 0).y,
+        texelFetch(intermediateVelocityField, texCoord - ivec2(0, 1), 0).y
+    );
+    float boundaryValues[4] = float[4](
+        texelFetch(bndQuantity, ivec3( texCoord + ivec2(1, 0), 1 ), 0).x,
+        texelFetch(bndQuantity, ivec3( texCoord - ivec2(1, 0), 0 ), 0).x,
+        texelFetch(bndQuantity, ivec3( texCoord + ivec2(0, 1), 3 ), 0).y,
+        texelFetch(bndQuantity, ivec3( texCoord - ivec2(0, 1), 2 ), 0).y
+    );
+    for(uint i = 0; i < 4; ++i) {
+        neighbourValues[i] = mix(
+            neighbourValues[i], 
+            boundaryValues[i], 
+            boundaryMultipliers[i]
+        );
+    }
+
+    result  = (neighbourValues[0] - neighbourValues[1]) * k_rdxdy.x;
+    result += (neighbourValues[2] - neighbourValues[3]) * k_rdxdy.y;
+    return 0.5f * result;
+}
+
+
+float simplerDiv(
+    in ivec2     texel,
+    in sampler2D toread
+) {
+    vec2 dfxdfy = vec2(
+        texelFetch(toread, texel + ivec2(1, 0), 0).x - texelFetch(toread, texel - ivec2(1, 0), 0).x,
+        texelFetch(toread, texel + ivec2(0, 1), 0).y - texelFetch(toread, texel - ivec2(0, 1), 0).y
+    );
+    return 0.5f * dot(dfxdfy, k_rdxdy);
+}

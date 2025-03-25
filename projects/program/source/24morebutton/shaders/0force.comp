@@ -1,0 +1,180 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D prevFrame;
+layout(binding = 1, rgba32f) writeonly uniform image2D   nextFrame;
+
+
+#define USER_DRAW_FILL_TYPE_DYE 0x00
+#define USER_DRAW_FILL_TYPE_FORCE 0x01
+#define USER_DRAW_FILL_TYPE_BOUNDARY 0x02
+#define USER_DRAW_FILL_TYPE_FORCE_AND_DYE 0x03
+
+
+vec2 vorticityForce(
+    in sampler2D tex,
+    in ivec2     texel,
+    in float     scale
+);
+
+
+vec4 drawPointAt(
+    in vec2  currPoint, 
+    in vec2  desiredPoint, 
+    in float radius,
+    in vec4  initialColor,
+    in bool  clampAtEdges
+);
+
+
+uniform ivec2 ku_simdims;
+uniform ivec2 ku_windims;
+uniform float ku_dt;
+uniform float ku_vorticityFactor;
+uniform float ku_splatterRadius; /* in texture space (0->1) */
+uniform vec2  ku_simUnitCoord;
+uniform vec2  ku_mouseDragPos;   /* in pixels  */
+uniform vec4  ku_splatterValue;
+uniform uint  ku_mousePressed;
+uniform uint  ku_chooseInteractionType;
+uniform uint  ku_useVorticity;
+
+vec2 k_winUnitCoord = vec2(1) / vec2(ku_windims);
+vec2 k_unitCoord    = vec2(1) / vec2(ku_simdims);
+vec2 k_rdxdy        = vec2(1) / ku_simUnitCoord;
+
+void main()
+{
+    ivec2 texelCoord;
+    vec2 norm_texcoord, norm_mousepos;
+    vec4 userInteractionValue = vec4(0);
+
+    texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    norm_texcoord = vec2(texelCoord) * k_unitCoord;
+
+    norm_mousepos = ku_mouseDragPos * k_winUnitCoord;
+    norm_mousepos.y = 1.0f - norm_mousepos.y;
+
+
+    if(bool(ku_mousePressed)) 
+    {
+        switch(ku_chooseInteractionType) {
+            case USER_DRAW_FILL_TYPE_DYE: /* Dye */
+            userInteractionValue = drawPointAt(
+                norm_texcoord,
+                norm_mousepos,
+                ku_splatterRadius,
+                ku_splatterValue,
+                true
+            );
+            break;
+            case USER_DRAW_FILL_TYPE_FORCE: /* Force */
+            userInteractionValue = ku_dt * drawPointAt(
+                norm_texcoord,
+                norm_mousepos,
+                ku_splatterRadius,
+                vec4(normalize(ku_splatterValue.xy), 0, 0),
+                false
+            );
+            break;
+            case USER_DRAW_FILL_TYPE_BOUNDARY: /* Boundary */
+            userInteractionValue = drawPointAt(
+                norm_texcoord,
+                norm_mousepos,
+                ku_splatterRadius,
+                vec4(1),
+                true
+            );
+            userInteractionValue = vec4(float( 
+                any(
+                    greaterThan(userInteractionValue, vec4(0.0f))
+                ) 
+            ));
+            break;
+            default:
+            break;
+        }
+    }
+
+
+    if(bool(ku_useVorticity)) {
+        userInteractionValue.xy += vorticityForce(
+            prevFrame, 
+            texelCoord, 
+            ku_vorticityFactor
+        );
+    }
+
+
+    imageStore(nextFrame, texelCoord,
+        + texelFetch(prevFrame, texelCoord, 0) 
+        + userInteractionValue
+    );
+    return;
+}
+
+
+vec4 drawPointAt(
+    in vec2  currPoint, 
+    in vec2  desiredPoint, 
+    in float radius,
+    in vec4  value,
+    in bool  clampAtEdges
+) {
+    float dist = length(currPoint - desiredPoint) / radius;
+    vec4  result = exp(-dist*dist) * value;
+
+    /* if we're clamping, outside the radius should be 0 color. */
+    float toclamp = float(clampAtEdges) * float(dist < 1) + float(!clampAtEdges); 
+    result *= toclamp;
+    return result;
+}
+
+
+/* 
+    Thanks to:
+    https://scicomp.stackexchange.com/questions/21915/discrete-definitions-of-curl-nabla-times-f
+*/
+float curl2D(
+    in sampler2D tex,
+    in ivec2     texel
+) {
+    float samples[4] = float[4](
+        texelFetch(tex, texel + ivec2(1, 0), 0).x,
+        texelFetch(tex, texel - ivec2(1, 0), 0).x,
+        texelFetch(tex, texel + ivec2(0, 1), 0).y,
+        texelFetch(tex, texel - ivec2(0, 1), 0).y
+    );
+    
+    vec2 temp = vec2(samples[2] - samples[3], samples[0] - samples[1]);
+    temp *= k_rdxdy * 0.5f;
+    
+    return temp.x - temp.y;
+}
+
+
+vec2 vorticityForce(
+    in sampler2D tex,
+    in ivec2     texel,
+    in float     scale
+)  {
+    float samples[4] = float[4](
+        abs( curl2D(tex, texel + ivec2(1, 0)) ),
+        abs( curl2D(tex, texel - ivec2(1, 0)) ),
+        abs( curl2D(tex, texel + ivec2(0, 1)) ),
+        abs( curl2D(tex, texel - ivec2(0, 1)) )
+    );
+    float curlij = curl2D(tex, texel);
+
+    vec2 grad = 0.5f * k_rdxdy * vec2(
+        samples[0] - samples[1], 
+        samples[2] - samples[3]
+    );
+    vec2 psi = normalize(grad);
+
+    // vec3 result = scale * vec3(ku_simUnitCoord, 0) * cross(
+    //     vec3(psi,       0),
+    //     vec3(0, 0, curlij)
+    // );
+    vec2 result = scale * ku_dt * ku_simUnitCoord * vec2(psi.y, psi.x) * curlij;
+    return result;
+}

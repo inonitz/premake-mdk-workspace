@@ -1,0 +1,77 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D prevFrame;
+layout(binding = 1, rgba32f) writeonly uniform image2D   nextFrame;
+
+
+vec4 drawPointAt(
+    in vec2  currPoint, 
+    in vec2  desiredPoint, 
+    in float radius,
+    in vec4  initialColor,
+    in bool  clampAtEdges
+);
+
+
+uniform ivec2 ku_simdims;
+uniform ivec2 ku_windims;
+uniform float ku_splatterRadius; /* in texture space (0->1) */
+uniform vec2  ku_mouseDragPos;   /* in pixels  */
+uniform uint  ku_mousePressed;
+
+
+vec2 k_winUnitCoord = vec2(1) / vec2(ku_windims);
+vec2 k_unitCoord    = vec2(1) / vec2(ku_simdims);
+
+
+void main()
+{
+    ivec2 texelCoord;
+    vec2 norm_texcoord, norm_mousepos;
+    vec4 userInteractionValue = vec4(0);
+
+    texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    norm_texcoord = vec2(texelCoord) * k_unitCoord;
+
+    norm_mousepos = ku_mouseDragPos * k_winUnitCoord;
+    norm_mousepos.y = 1.0f - norm_mousepos.y;
+
+
+    if(bool(ku_mousePressed)) 
+    {
+        userInteractionValue = drawPointAt(
+            norm_texcoord,
+            norm_mousepos,
+            ku_splatterRadius,
+            vec4(1.0),
+            true
+        );
+        userInteractionValue = vec4(float(
+            any( greaterThan(userInteractionValue, vec4(0.0f)) )
+        ));
+    }
+
+
+    imageStore(nextFrame, texelCoord,
+        + texelFetch(prevFrame, texelCoord, 0) 
+        + userInteractionValue
+    );
+    return;
+}
+
+
+vec4 drawPointAt(
+    in vec2  currPoint, 
+    in vec2  desiredPoint, 
+    in float radius,
+    in vec4  value,
+    in bool  clampAtEdges
+) {
+    float dist = length(currPoint - desiredPoint) / radius;
+    vec4  result = exp(-dist*dist) * value;
+
+    /* if we're clamping, outside the radius should be 0 color. */
+    float toclamp = float(clampAtEdges) * float(dist < 1) + float(!clampAtEdges); 
+    result *= toclamp;
+    return result;
+}

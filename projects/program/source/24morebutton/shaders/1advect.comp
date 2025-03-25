@@ -1,0 +1,74 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D quantityField;
+layout (binding = 1)                    uniform sampler2D velocityField;
+layout (binding = 2, rgba32f) writeonly uniform image2D   outputField;
+
+
+vec4 textureBiLerp(in sampler2D tex, in vec2 uv);
+vec4 advection_step(
+    in ivec2     coord,
+    in vec2      normcoord, 
+    in sampler2D ufield, 
+    in sampler2D quantity_read
+);
+
+
+uniform uint  ku_writeAllComponents;
+uniform float ku_dt;
+uniform vec2  ku_simUnitCoord;
+uniform ivec2 ku_simdims;
+vec2 k_unitCoord = vec2(1) / vec2(ku_simdims);
+vec2 k_simrdxdy  = 1.0f / ku_simUnitCoord;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec4  result = advection_step(
+        texelCoord,
+        k_unitCoord * vec2(texelCoord),
+        velocityField,
+        quantityField
+    );
+
+    if(!bool(ku_writeAllComponents)) { /* we only conserve velocity */
+        float oldPressure = texelFetch(quantityField, texelCoord, 0).z;
+        result = vec4(result.xy, oldPressure, 0.0f);
+    }
+
+    imageStore(outputField, texelCoord, result);
+    return;
+}
+
+
+vec4 advection_step(
+    in ivec2     coord,
+    in vec2      normcoord, 
+    in sampler2D ufield, 
+    in sampler2D quantity_read
+) {
+    vec2 newcoord = normcoord - ku_dt * k_simrdxdy * texelFetch(ufield, coord, 0).xy;
+    return textureBiLerp(quantity_read, newcoord);
+}
+
+
+
+
+vec4 textureBiLerp(in sampler2D tex, in vec2 uv) {
+    vec2 texBufferCoord = uv * vec2(ku_simdims);
+    vec2 texelCoord = floor(texBufferCoord);
+    vec2 weight = texBufferCoord - texelCoord;
+
+    vec4 bottom = mix(
+        texelFetch(tex, ivec2(texelCoord) + ivec2(0, 0), 0), 
+        texelFetch(tex, ivec2(texelCoord) + ivec2(1, 0), 0),
+        weight.x
+    );
+    vec4 top    = mix(
+        texelFetch(tex, ivec2(texelCoord) + ivec2(0, 1), 0), 
+        texelFetch(tex, ivec2(texelCoord) + ivec2(1, 1), 0),
+        weight.x
+    );
+    return mix(bottom, top, weight.y);
+}

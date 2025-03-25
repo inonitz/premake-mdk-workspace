@@ -1,31 +1,21 @@
 #include "vars.hpp"
-#include "glbinding/gl/enum.h"
-#include "glbinding/gl/functions.h"
 #include <awc2/C/awc2.h>
 
 
-namespace boundary21 {
+namespace morebutton24 {
 
 
-// const char* computeShaderFilename[8] = {
-//     "shaders/0force.comp",
-//     "shaders/1advect.comp",
-//     "shaders/2diffuse.comp",
-//     "shaders/3div.comp",
-//     "shaders/4pressure.comp",
-//     "shaders/5final.comp",
-//     "shaders/6draw.comp",
-//     "shaders/minmax.comp"
-// };
-const char* computeShaderFilename[8] = {
-    "projects/program/source/21boundaries/shaders/0force.comp",
-    "projects/program/source/21boundaries/shaders/1advect.comp",
-    "projects/program/source/21boundaries/shaders/2diffuse.comp",
-    "projects/program/source/21boundaries/shaders/3div.comp",
-    "projects/program/source/21boundaries/shaders/4pressure.comp",
-    "projects/program/source/21boundaries/shaders/5final.comp",
-    "projects/program/source/21boundaries/shaders/6draw.comp",
-    "projects/program/source/21boundaries/shaders/minmax.comp"
+const char* computeShaderFilename[10] = {
+    "projects/program/source/24morebutton/shaders/0force.comp",
+    "projects/program/source/24morebutton/shaders/1advect.comp",
+    "projects/program/source/24morebutton/shaders/2diffuse.comp",
+    "projects/program/source/24morebutton/shaders/3div.comp",
+    "projects/program/source/24morebutton/shaders/4pressure.comp",
+    "projects/program/source/24morebutton/shaders/5final.comp",
+    "projects/program/source/24morebutton/shaders/6draw.comp",
+    "projects/program/source/24morebutton/shaders/minmax.comp",
+    "projects/program/source/24morebutton/shaders/errortex.comp",
+    "projects/program/source/24morebutton/shaders/error_reduct.comp",
 };
 
 
@@ -47,14 +37,32 @@ Time::Timestamp    g_computeFluidTime{};
 Time::Timestamp    g_computeVelTime{};
 Time::Timestamp    g_computeDyeTime{};
 Time::Timestamp    g_computeCFLTime{};
+Time::Timestamp    g_computeErrEstimateTime{};
 Time::Timestamp    g_computeMaximumCPU{};
 Time::Timestamp    g_computeMaximumGPU{};
+Time::Timestamp    g_computeErrorGPU{};
+Time::Timestamp    g_computeErrorCPU{};
 Time::Timestamp    g_renderImguiTime{};
 Time::Timestamp    g_renderScreenTime{};
 
 
+/* Compute Parameters */
+const vec2i        g_dims{1024, 1024};
+const vec2f        g_invdims = vec2f{
+    1.0f / __scast(f32, g_dims.x),
+    1.0f / __scast(f32, g_dims.y),
+};
+vec2i              g_windowSize{g_dims};
+const vec3u        g_localWorkGroupSize = { 64, 1, 1 };
+const vec3u        g_computeInvocationSize = vec3u{ g_dims.x, g_dims.y, 1 } / g_localWorkGroupSize;
+i32                g_maximumJacobiIterations = 80;
+const i32          g_reductionFactor = 8192;
+const i32          g_reductionBufferLength = g_dims.x * g_dims.y / g_reductionFactor;
+
+
 /* Simulation Constants */
 f32   g_kinematicViscosity = 1.0f;
+f32   g_densityPressure    = 1.0f;
 f32   g_confineVorticity   = 0.0f;
 f32   g_buoyancyStrength   = 1.0f;
 f32   g_ambientTemperature = 20.0f;
@@ -64,37 +72,41 @@ f32   g_cfl                = 0.0f;
 vec2f g_simUnitCoords{1.0f};
 
 
-
 /* User Interaction/Info */
 bool  g_mousePress;
 bool  g_mousePressLeft;
 bool  g_mousePressRight;
 bool  g_mousePressMiddle;
+bool  g_mousePressOverride{true};
+bool  g_mouseLockInPlace{true};
 bool  g_windowFocusFlag;
 bool  g_skipRendering;
 bool  g_useVorticityConfinement{false};
 bool  g_imGuiButton[10]{false};
 u8    g_runCodeOnce[3];
-u8    g_chooseTextureToRender{0};
-u8    g_chooseUserDrawFillType{0};
-f32   g_textureHighlightSmallValue{1.0f};
+u8    g_chooseTextureToRender{TEXTURE_DRAW_VELOCITY_PRESSURE};
+u8    g_chooseUserDrawFillType{USER_DRAW_FILL_TYPE_FORCE_AND_DYE};
+f32   g_textureHighlightSmallValue{100.0f};
 f32   g_splatterRadius{0.009};
-vec2f g_mousedxdy{0, 0};
-vec2f g_mousePosition{0, 0};
+f32   g_maxSpectralRadius{0};
+f32   g_iterationErrorN{0};
+vec4f g_mousedxdy{0.0f, 1.0f, 0.0f, 0.0f};
+vec2f g_mousePosition{g_windowSize.x / 2, g_windowSize.y / 2};
 vec2f g_maxVelocity{0.0f, 0.0f};
-vec4f g_splatterForce{1.0f, 1.0f, 1.0f, 1.0f};
+vec4f g_prevErrorValues[3]{ /* min, max, avg */
+    vec4f{1000.0f},
+    vec4f{0.0f},
+    vec4f{0.0f}
+};
+vec4f g_currErrorValues[3]{ /* min, max, avg */
+    vec4f{1000.0f},
+    vec4f{0.0f},
+    vec4f{0.0f}
+};
 vec4f g_splatterColor{1.0f, 1.0f, 1.0f, 1.0f};
 
 
-vec2i              g_dims{1920, 1080};
-vec2i              g_windowSize{g_dims};
-vec3u              g_localWorkGroupSize = { 64, 1, 1 };
-vec3u              g_computeInvocationSize = vec3u{ g_dims.x, g_dims.y, 1 } / g_localWorkGroupSize;
-i32                g_maximumJacobiIterations = 80;
-i32                g_reductionFactor = 4096;
-i32                g_reductionBufferLength = g_dims.x * g_dims.y / g_reductionFactor;
-std::vector<vec4f> g_reductionBuffer;
-
+/* OpenGL Data */
 gl::GLsync         g_fence; 
 u32                g_texture[19];
 u32                g_persistentbuf[2];
@@ -112,30 +124,33 @@ ShaderProgramV2& gr_computeDiffusionPressure = g_compute[4];
 ShaderProgramV2& gr_computeNewVelocity       = g_compute[5];
 ShaderProgramV2& gr_computeRenderToTex       = g_compute[6];
 ShaderProgramV2& gr_computeCFLCondition      = g_compute[7];
+ShaderProgramV2& gr_computeErrorTexture      = g_compute[8];
+ShaderProgramV2& gr_computeErrorEstimates    = g_compute[9];
 
 
-u32& gr_drawTexture   = g_texture[0];
-u32& gr_dyeTexture0   = g_texture[1];
-u32& gr_dyeTexture1   = g_texture[2];
-u32& gr_tmpTexture0   = g_texture[3];
-u32& gr_tmpTexture1   = g_texture[4];
-u32& gr_outTexShader0 = g_texture[5];
-u32& gr_outTexShader1 = g_texture[6];
-u32& gr_outTexShader2 = g_texture[7]; /* will use tmpTexture for ping-pong */
-u32& gr_outTexShader3 = g_texture[8];
-u32& gr_outTexShader4 = g_texture[9];
-u32& gr_outTexShader5 = g_texture[10];
-u32& gr_outTexShader6 = g_texture[11];
-u32& gr_outTexShader7 = g_texture[12];
-u32& gr_outTexShader8 = g_texture[13];
-u32& gr_outTexShader9 = g_texture[14];
-u32& gr_simTexture0   = g_texture[15]; /* Components are [u.x, u.y, p, reserved] */
-u32& gr_simTexture1   = g_texture[16];
-u32& gr_bndryTexture0 = g_texture[17];
-u32& gr_bndryTexture1 = g_texture[18];
-u32& g_reductionMinTexture = g_persistentbuf[0];
-u32& g_reductionMaxTexture = g_persistentbuf[1];
+const u32& gr_drawTexture   = g_texture[0];
+const u32& gr_dyeTexture0   = g_texture[1];
+const u32& gr_dyeTexture1   = g_texture[2];
+const u32& gr_tmpTexture0   = g_texture[3];
+const u32& gr_tmpTexture1   = g_texture[4];
+const u32& gr_outTexShader0 = g_texture[5];
+const u32& gr_outTexShader1 = g_texture[6];
+const u32& gr_outTexShader2 = g_texture[7]; /* will use tmpTexture for ping-pong */
+const u32& gr_outTexShader3 = g_texture[8];
+const u32& gr_outTexShader4 = g_texture[9];
+const u32& gr_outTexShader5 = g_texture[10];
+const u32& gr_outTexShader6 = g_texture[11];
+const u32& gr_outTexShader7 = g_texture[12];
+const u32& gr_outTexShader8 = g_texture[13];
+const u32& gr_outTexShader9 = g_texture[14];
+const u32& gr_simTexture0   = g_texture[15]; /* Components are [u.x, u.y, p, reserved] */
+const u32& gr_simTexture1   = g_texture[16];
+const u32& gr_bndryTexture0 = g_texture[17];
+const u32& gr_bndryTexture1 = g_texture[18];
+const u32& g_reductionErrBuffer = g_persistentbuf[0];
+const u32& g_reductionMaxBuffer = g_persistentbuf[1];
 void* g_reductionMaxMappedBuf = nullptr;
+void* g_reductionErrMappedBuf = nullptr;
 
 
 
@@ -216,7 +231,23 @@ void initializeGraphics()
     }
 
 
-    gl::glNamedBufferStorage(g_reductionMaxTexture, 
+    gl::glNamedBufferStorage(g_reductionErrBuffer, 
+        g_reductionBufferLength * 3 * sizeof(vec4f), 
+        nullptr, 
+        gl::GL_NONE_BIT
+        | gl::GL_MAP_READ_BIT
+        | gl::GL_MAP_PERSISTENT_BIT
+        | gl::GL_MAP_COHERENT_BIT
+    );
+    g_reductionErrMappedBuf = gl::glMapNamedBufferRange(g_reductionErrBuffer, 
+        0, g_reductionBufferLength * 3 * sizeof(vec4f),  
+        gl::GL_NONE_BIT
+        | gl::GL_MAP_READ_BIT
+        | gl::GL_MAP_PERSISTENT_BIT
+        | gl::GL_MAP_COHERENT_BIT
+    );
+
+    gl::glNamedBufferStorage(g_reductionMaxBuffer, 
         g_reductionBufferLength * sizeof(vec4f), 
         nullptr, 
         gl::GL_NONE_BIT
@@ -224,7 +255,7 @@ void initializeGraphics()
         | gl::GL_MAP_PERSISTENT_BIT
         | gl::GL_MAP_COHERENT_BIT
     );
-    g_reductionMaxMappedBuf = gl::glMapNamedBufferRange(g_reductionMaxTexture, 
+    g_reductionMaxMappedBuf = gl::glMapNamedBufferRange(g_reductionMaxBuffer, 
         0, g_reductionBufferLength * sizeof(vec4f),  
         gl::GL_NONE_BIT
         | gl::GL_MAP_READ_BIT
@@ -250,14 +281,14 @@ void destroyGraphics()
 
 
     gl::glDeleteTextures(__carraysize(g_texture), &g_texture[0]);
-    gl::glUnmapNamedBuffer(g_reductionMaxTexture);
+    gl::glUnmapNamedBuffer(g_reductionMaxBuffer);
+    gl::glUnmapNamedBuffer(g_reductionErrBuffer);
     gl::glDeleteBuffers(__carraysize(g_persistentbuf), &g_persistentbuf[0]);
     gl::glDeleteFramebuffers(1, &g_fbo);
     for(auto& comp : g_compute) {
         comp.destroy();
     }
-    g_reductionBuffer.resize(0);
-    
+
 
     markstr("Graphics Destroy End");
     return;
@@ -281,6 +312,8 @@ static void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct con
     g_mousePressRight  = awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT);
     g_mousePressMiddle = awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_MIDDLE);
     g_mousePress       = g_mousePressLeft || g_mousePressRight || g_mousePressMiddle;
+    if(!g_mouseLockInPlace)
+        g_mousePressOverride = g_mousePressRight;
     return;
 }
 
@@ -298,17 +331,22 @@ static void custom_winsize_callback(AWC2User_callback_winsize_struct const* data
         __scast(u32, data->width), 
         __scast(u32, data->height) 
     };
+    if(g_mouseLockInPlace) {
+        g_mousePosition = vec2f{g_windowSize.x, g_windowSize.y} * 0.5f;
+    }
     return;
 }
 
 
 static void custom_cursor_callback(AWC2User_callback_mousecursor_struct const* data)
 {
-    auto mousedelta = awc2getMousePositionDelta();
-    g_mousePosition = vec2f{ data->pos.x  , data->pos.y };
-    g_mousedxdy     = vec2f{ mousedelta.x, mousedelta.y };
+    if(!g_mouseLockInPlace) {
+        auto mousedelta = awc2getMousePositionDelta();
+        g_mousePosition = vec2f{ data->pos.x, data->pos.y };
+        g_mousedxdy     = vec4f{ mousedelta.x, mousedelta.y, 0, 0 };
+    }
     return;
 }
 
 
-} /* namespace cleanup19 */
+} /* namespace 23multigrid */

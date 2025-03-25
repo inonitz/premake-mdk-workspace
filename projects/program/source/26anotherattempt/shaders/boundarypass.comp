@@ -1,0 +1,66 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D quantityIn;
+layout (binding = 1)                    uniform sampler2D boundaryBitmap;
+layout (binding = 2, rgba32f) writeonly uniform image3D   bndQuantityOut;
+
+
+uniform ivec2 ku_simdims;
+uniform int   ku_conserveVelocityOrPressure; /* 0 = vel, 1 = pressure */
+
+
+bool isBoundary(ivec2 coords) 
+{
+    bool outOfBounds = any(bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    ));
+    bool bitmapSays = texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+    return outOfBounds || bitmapSays;
+}
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    if(!isBoundary(texelCoord))
+        return;
+
+
+    float multiplier = mix(
+        1.0f,
+        -1.0f,
+        !bool(ku_conserveVelocityOrPressure)
+    );
+    ivec2 neighbouridx[4] = ivec2[4](
+        texelCoord + ivec2(1, 0), /* right */
+        texelCoord - ivec2(1, 0), /* left  */
+        texelCoord + ivec2(0, 1), /* up    */
+        texelCoord - ivec2(0, 1)  /* down  */
+    );    
+    float neighbourbnd[4] = float[4](
+        float( isBoundary(neighbouridx[0]) ),
+        float( isBoundary(neighbouridx[1]) ),
+        float( isBoundary(neighbouridx[2]) ),
+        float( isBoundary(neighbouridx[3]) ) 
+    );
+    vec4 bndresult[4] = vec4[4](
+        multiplier * texelFetch(quantityIn, neighbouridx[0], 0),
+        multiplier * texelFetch(quantityIn, neighbouridx[1], 0),
+        multiplier * texelFetch(quantityIn, neighbouridx[2], 0),
+        multiplier * texelFetch(quantityIn, neighbouridx[3], 0)
+    );
+
+
+    bndresult[0] = mix(bndresult[0], vec4(0), neighbourbnd[0]);
+    bndresult[1] = mix(bndresult[1], vec4(0), neighbourbnd[1]);
+    bndresult[2] = mix(bndresult[2], vec4(0), neighbourbnd[2]);
+    bndresult[3] = mix(bndresult[3], vec4(0), neighbourbnd[3]);
+    imageStore(bndQuantityOut, ivec3(neighbouridx[0], 0), bndresult[0]);
+    imageStore(bndQuantityOut, ivec3(neighbouridx[1], 1), bndresult[1]);
+    imageStore(bndQuantityOut, ivec3(neighbouridx[2], 2), bndresult[2]);
+    imageStore(bndQuantityOut, ivec3(neighbouridx[3], 3), bndresult[3]);
+    return;
+}

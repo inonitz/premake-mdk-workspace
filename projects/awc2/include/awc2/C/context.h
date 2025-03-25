@@ -1,6 +1,7 @@
 #ifndef __AWC2_C_CONTEXT_INTERFACE_HEADER__
 #define __AWC2_C_CONTEXT_INTERFACE_HEADER__
 #include <util/macro.h>
+#include <util/static_assert.h>
 #include <util/base_type.h>
 
 

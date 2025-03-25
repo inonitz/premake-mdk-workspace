@@ -1,0 +1,95 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D intermediateVelocity; /* [ w.x, w.y, new_p, div(p) ]*/
+layout(binding = 1)                    uniform sampler2D intermediatePressure; /* [ w.x, w.y, new_p, div(p) ]*/
+layout(binding = 2)                    uniform sampler2D boundaryBitmap;
+layout(binding = 3)                    uniform sampler3D bndQuantity;
+layout(binding = 4, rgba32f) writeonly uniform image2D   updatedFields;
+
+
+bool isBoundary(ivec2 coords);
+vec2 PressureGradient3(
+    in sampler2D tex,
+    in sampler3D bnd,
+    in ivec2     texel,
+    in vec2      dx_dy
+);
+
+
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 pGrad;
+    vec4 valueij;
+    if(isBoundary(texelCoord)) {
+        return;
+    }
+
+
+    pGrad = PressureGradient3(intermediatePressure, bndQuantity, texelCoord, ku_simUnitCoord);
+    pGrad = texelFetch(intermediateVelocity, texelCoord, 0).xy - pGrad;
+    valueij = vec4(
+        pGrad,
+        texelFetch(intermediatePressure, texelCoord, 0).z,
+        0
+    );
+    imageStore(updatedFields, texelCoord, valueij);
+    return;
+}
+
+
+bool isBoundary(ivec2 coords) 
+{
+    bool outOfBounds = any(bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    ));
+    bool bitmapSays  = texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+    return outOfBounds || bitmapSays;
+}
+
+
+vec2 PressureGradient3(
+    in sampler2D tex,
+    in sampler3D bnd,
+    in ivec2     texel,
+    in vec2      dx_dy
+) {
+    vec2 result = vec2(0);
+    float boundaryMultipliers[4] = float[4](
+        float( isBoundary(texel + ivec2(1, 0) )),
+        float( isBoundary(texel - ivec2(1, 0) )),
+        float( isBoundary(texel + ivec2(0, 1) )),
+        float( isBoundary(texel - ivec2(0, 1) ))
+    );
+    float neighbourValues[4] = float[4](
+        texelFetch(tex, texel + ivec2(1, 0), 0).z,
+        texelFetch(tex, texel - ivec2(1, 0), 0).z,
+        texelFetch(tex, texel + ivec2(0, 1), 0).z,
+        texelFetch(tex, texel - ivec2(0, 1), 0).z
+    );
+    float boundaryValues[4] = float[4](
+        texelFetch(bnd, ivec3( texel + ivec2(1, 0), 1 ), 0).z,
+        texelFetch(bnd, ivec3( texel - ivec2(1, 0), 0 ), 0).z,
+        texelFetch(bnd, ivec3( texel + ivec2(0, 1), 3 ), 0).z,
+        texelFetch(bnd, ivec3( texel - ivec2(0, 1), 2 ), 0).z
+    );
+    for(uint i = 0; i < 4; ++i) {
+        neighbourValues[i] = mix(
+            neighbourValues[i], 
+            boundaryValues[i], 
+            boundaryMultipliers[i]
+        );
+    }
+
+    dx_dy = vec2(0.5f) / dx_dy;
+    result.x = dx_dy.x * (neighbourValues[0] - neighbourValues[1]);
+    result.y = dx_dy.y * (neighbourValues[2] - neighbourValues[3]);
+    return result;
+}

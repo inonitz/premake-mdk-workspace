@@ -4,7 +4,7 @@
 
 
 #ifndef _SELECT_MAIN
-#   define _SELECT_MAIN 23
+#   define _SELECT_MAIN 26
 #endif
 
 #if _SELECT_MAIN == -1
@@ -55,6 +55,14 @@
 #   include "21boundaries/arbitrary.hpp"
 #elif _SELECT_MAIN == 23
 #   include "23multigrid/mg.hpp"
+#elif _SELECT_MAIN == 24
+#   include "24morebutton/mb.hpp"
+#elif _SELECT_MAIN == 25
+#   include "25boundaryagain/ba.hpp"
+#elif _SELECT_MAIN == 26
+#   include "26anotherattempt/aa.hpp"
+#elif _SELECT_MAIN == 27
+#   include "27testsubimage/subimage.hpp"
 #endif
 
 
@@ -110,6 +118,15 @@ int main(__unused int argc, __unused char* argv[]) {
     out = arbitrary_boundaries_in_sim();
 #elif _SELECT_MAIN == 23
     out = multigrid_method_also_no_internal_boundaries_for_now();
+#elif _SELECT_MAIN == 24
+    out = no_multigrid_for_now_more_buttons();
+#elif _SELECT_MAIN == 25
+    out = no_multigrid_for_now_until_internal_boundary_works();
+#elif _SELECT_MAIN == 26
+    out = another_boundary_implementation_attempt();
+#elif _SELECT_MAIN == 27
+    out = compute_user_interaction_with_subimage();
+
 #endif
 
 

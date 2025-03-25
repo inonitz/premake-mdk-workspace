@@ -1,0 +1,99 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D pressureIn;
+layout (binding = 1, rgba32f) writeonly uniform image2D   pressureOut;
+layout (binding = 2)                    uniform sampler2D boundaryBitmap;
+layout (binding = 3)                    uniform sampler3D bndQuantityIn;
+layout (binding = 4, rgba32f) writeonly uniform image3D   bndQuantityOut;
+
+
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+uniform float ku_inverseDensity;
+vec2 k_unitCoord  = vec2(1) / vec2(ku_simdims);
+vec2 k_simdxdysq  = (ku_simUnitCoord * ku_simUnitCoord);
+vec2 k_simrdxdysq = 1.0f / k_simdxdysq;
+
+
+bool isBoundary(ivec2 coords) 
+{
+    int _flat = coords.y + coords.x * ku_simdims.x;
+    if(_flat < 0 || _flat > ku_simdims.x * ku_simdims.y - 1) {
+        return true;
+    }
+    return texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+}
+
+
+void main()
+{
+    vec4  result;
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 neighbouridx[4] = ivec2[4](
+        texelCoord + ivec2(1, 0), /* right */
+        texelCoord - ivec2(1, 0), /* left  */
+        texelCoord + ivec2(0, 1), /* up    */
+        texelCoord - ivec2(0, 1)  /* down  */
+    );
+    float boundarybits[4] = float[4](
+        float( isBoundary(neighbouridx[0]) ),
+        float( isBoundary(neighbouridx[1]) ),
+        float( isBoundary(neighbouridx[2]) ),
+        float( isBoundary(neighbouridx[3]) ) 
+    );
+    ivec3 bndQuantityIdx[4] = ivec3[4](
+        ivec3(neighbouridx[0], 1),
+        ivec3(neighbouridx[0], 0),
+        ivec3(neighbouridx[0], 3),
+        ivec3(neighbouridx[0], 2)
+    );
+    float neighbourValues[4] = float[4](
+        texelFetch(pressureIn, neighbouridx[0], 0).z,
+        texelFetch(pressureIn, neighbouridx[0], 1).z,
+        texelFetch(pressureIn, neighbouridx[0], 2).z,
+        texelFetch(pressureIn, neighbouridx[0], 3).z
+    );
+    vec4 bndQuantityNeighbours[4] = vec4[4](
+        texelFetch(bndQuantityIn, bndQuantityIdx[0], 0),
+        texelFetch(bndQuantityIn, bndQuantityIdx[1], 0),
+        texelFetch(bndQuantityIn, bndQuantityIdx[2], 0),
+        texelFetch(bndQuantityIn, bndQuantityIdx[3], 0)
+    );
+
+
+    if(isBoundary(texelCoord)) {
+        float ifBoundarySetZeroElseSetNeighbourValue;
+        for(int i = 0; i < 4; ++i) 
+        {
+            ifBoundarySetZeroElseSetNeighbourValue = mix(
+                neighbourValues[i],
+                0,
+                boundarybits[i]
+            );
+            result   = bndQuantityNeighbours[i];
+            result.z = ifBoundarySetZeroElseSetNeighbourValue;
+            imageStore(bndQuantityOut, ivec3(texelCoord, i), result);
+        }
+    } else {
+        float ifBoundarySetBndQuantityElseSetNeighbourValue;
+
+        for(int i = 0; i < 4; ++i) {
+            ifBoundarySetBndQuantityElseSetNeighbourValue = mix(
+                neighbourValues[i],
+                bndQuantityNeighbours[i].z,
+                boundarybits[i]
+            );
+            neighbourValues[i] = ifBoundarySetBndQuantityElseSetNeighbourValue;
+        }
+        float sigmaX = k_simrdxdysq.x * (neighbourValues[0] + neighbourValues[1]);
+        float sigmaY = k_simrdxdysq.y * (neighbourValues[2] + neighbourValues[3]);
+        float invLambda = 0.5f / (k_simrdxdysq.x + k_simrdxdysq.y);
+
+        result = vec4(0, 0, texelFetch(pressureIn, texelCoord, 0).zw);
+        result.z = invLambda * ( sigmaX + sigmaY - (result.w / ku_inverseDensity) ); 
+        imageStore(pressureOut, texelCoord, result);
+    }
+
+
+    return;
+}

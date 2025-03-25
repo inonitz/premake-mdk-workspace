@@ -1,0 +1,12 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D renderfrom;
+layout (binding = 1, rgba32f) writeonly uniform image2D   renderto;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    imageStore(renderto, texelCoord, texelFetch(renderfrom, texelCoord, 0));
+    return;
+}

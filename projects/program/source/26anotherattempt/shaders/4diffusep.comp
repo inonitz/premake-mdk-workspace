@@ -1,0 +1,117 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D pressureIn;
+layout (binding = 1, rgba32f) writeonly uniform image2D   pressureOut;
+layout (binding = 2)                    uniform sampler2D boundaryBitmap;
+layout (binding = 3)                    uniform sampler3D bndQuantityIn;
+
+
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+uniform float ku_inverseDensity;
+vec2 k_unitCoord  = vec2(1) / vec2(ku_simdims);
+vec2 k_simdxdysq  = (ku_simUnitCoord * ku_simUnitCoord);
+vec2 k_simrdxdysq = 1.0f / k_simdxdysq;
+
+
+bool isBoundary(ivec2 coords) 
+{
+    bool outOfBounds = any(bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    ));
+    bool bitmapSays  = texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+    return outOfBounds || bitmapSays;
+}
+
+
+float updated_pressure(
+    in sampler2D tex,
+    in ivec2     ij,
+    in vec2      dxdysq,
+    in float     alpha
+);
+
+
+
+void main()
+{
+    vec4  result = vec4(0);
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+        
+    if(isBoundary(texelCoord))
+        return;
+
+
+    ivec2 neighbouridx[4] = ivec2[4](
+        texelCoord + ivec2(1, 0), /* right */
+        texelCoord - ivec2(1, 0), /* left  */
+        texelCoord + ivec2(0, 1), /* up    */
+        texelCoord - ivec2(0, 1)  /* down  */
+    );
+    float neighbourbnd[4] = float[4](
+        float( isBoundary(neighbouridx[0]) ),
+        float( isBoundary(neighbouridx[1]) ),
+        float( isBoundary(neighbouridx[2]) ),
+        float( isBoundary(neighbouridx[3]) ) 
+    );
+    float neighbourValues[4] = float[4](
+        texelFetch(pressureIn, neighbouridx[0], 0).z,
+        texelFetch(pressureIn, neighbouridx[1], 0).z,
+        texelFetch(pressureIn, neighbouridx[2], 0).z,
+        texelFetch(pressureIn, neighbouridx[3], 0).z
+    );
+    vec4 bndQuantityNeighbours[4] = vec4[4](
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[0], 1), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[1], 0), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[2], 3), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[3], 2), 0)
+    );
+    neighbourValues[0] = mix(neighbourValues[0], bndQuantityNeighbours[0].z, neighbourbnd[0]);
+    neighbourValues[1] = mix(neighbourValues[1], bndQuantityNeighbours[1].z, neighbourbnd[1]);
+    neighbourValues[2] = mix(neighbourValues[2], bndQuantityNeighbours[2].z, neighbourbnd[2]);
+    neighbourValues[3] = mix(neighbourValues[3], bndQuantityNeighbours[3].z, neighbourbnd[3]);
+    // float sigmaX = k_simrdxdysq.x * (neighbourValues[0] + neighbourValues[1]);
+    // float sigmaY = k_simrdxdysq.y * (neighbourValues[2] + neighbourValues[3]);
+    // float invLambda = 0.5f / (k_simrdxdysq.x + k_simrdxdysq.y);
+
+    // result.zw = texelFetch(pressureIn, texelCoord, 0).zw;
+    // result.z  = invLambda * ( sigmaX + sigmaY - (result.w / ku_inverseDensity) );
+    
+
+    float sum = 0.0f;
+    result.w = texelFetch(pressureIn, texelCoord, 0).w;
+    sum += k_simdxdysq.y * ( neighbourValues[0] + neighbourValues[1] );
+    sum += k_simdxdysq.x * ( neighbourValues[2] + neighbourValues[3] );
+    sum -= result.w * k_simdxdysq.x * k_simdxdysq.y;
+    sum *= 0.5f;
+    sum *= 1.0f / (k_simdxdysq.x + k_simdxdysq.y);
+    result.z = sum;
+    imageStore(pressureOut, texelCoord, result);
+    return;
+}
+
+
+float updated_pressure(
+    in sampler2D tex,
+    in ivec2     ij,
+    in vec2      dxdysq,
+    in float     alpha
+) {
+    vec4 neighbours = vec4(
+        texelFetch(tex, ij + ivec2(1, 0), 0).z,
+        texelFetch(tex, ij - ivec2(1, 0), 0).z,
+        texelFetch(tex, ij + ivec2(0, 1), 0).z,
+        texelFetch(tex, ij - ivec2(0, 1), 0).z
+    );
+    
+    float sum = 0.0f;
+    sum += dxdysq.y * ( neighbours[0] + neighbours[1] );
+    sum += dxdysq.x * ( neighbours[2] + neighbours[3] );
+    sum -= alpha * dxdysq.x * dxdysq.y;
+    sum *= 0.5f;
+    sum *= 1.0f / (dxdysq.x + dxdysq.y);
+    return sum;
+}

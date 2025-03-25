@@ -1,0 +1,89 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D initialField;
+layout (binding = 1, rgba32f) writeonly uniform image2D   outputField;
+
+
+bvec4 isBoundary(ivec2 coords);
+
+
+/* 
+    Single iteration of a jacobi solver
+*/
+vec2 laplacian(
+    in sampler2D x,
+    in ivec2 ij,
+    in vec2  xij
+);
+
+
+uniform float ku_dt;
+uniform float ku_viscosity;
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+vec2 k_unitCoord = vec2(1) / vec2(ku_simdims);
+vec2 k_simrdxdysq = 1.0f / (ku_simUnitCoord * ku_simUnitCoord);
+
+
+void main()
+{
+    ivec2 texelCoord, texelToFetch;
+    bvec4 boundaryBits;
+    bool  onTheBoundary;
+    vec2  result, IfBoundaryThenResultElseValueIJ, IfBoundaryIgnoreElseResult; 
+    float IfBoundaryNegateElseKeepSame;
+
+
+    texelCoord    = ivec2(gl_GlobalInvocationID.xy);
+    boundaryBits  = isBoundary(texelCoord);
+    onTheBoundary = any(boundaryBits);
+    texelToFetch  = texelCoord + ivec2(boundaryBits.xy) - ivec2(boundaryBits.zw);
+    
+    IfBoundaryNegateElseKeepSame    = mix(1.0f, -1.0f, float(onTheBoundary));
+    IfBoundaryThenResultElseValueIJ = IfBoundaryNegateElseKeepSame * texelFetch(initialField, texelToFetch, 0).xy;
+    IfBoundaryIgnoreElseResult      = IfBoundaryThenResultElseValueIJ;
+    IfBoundaryIgnoreElseResult += ku_viscosity * ku_dt * laplacian(
+            initialField, 
+            texelCoord, 
+            IfBoundaryIgnoreElseResult
+    );
+    result = mix(
+        IfBoundaryIgnoreElseResult,
+        IfBoundaryThenResultElseValueIJ,
+        vec2(float(onTheBoundary))
+    );
+    imageStore(outputField, texelCoord, vec4(result, 0.0f, 0.0f));
+    return;
+}
+
+
+bvec4 isBoundary(ivec2 coords) {
+    /* if .xy components are 1, the pixel is on the bottom left  */
+    /* if .zw components are 1, the pixel is on the top    right */
+    /* we can add/subtract them to get the neighbouring pixel (not on the boundary) */
+    return bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    );
+}
+
+
+vec2 laplacian(
+    in sampler2D x,
+    in ivec2 ij,
+    in vec2 xij
+) {
+    vec2 result = vec2(0.0f);
+    vec2 neighbourValues[4] = vec2[4](
+        texelFetch(x, ij + ivec2(1, 0), 0).xy,
+        texelFetch(x, ij - ivec2(1, 0), 0).xy,
+        texelFetch(x, ij + ivec2(0, 1), 0).xy,
+        texelFetch(x, ij - ivec2(0, 1), 0).xy
+    );
+
+    result += (neighbourValues[0] + neighbourValues[1] - 2.0f * xij) * k_simrdxdysq.y;
+    result += (neighbourValues[2] + neighbourValues[3] - 2.0f * xij) * k_simrdxdysq.x;
+    return result;
+}

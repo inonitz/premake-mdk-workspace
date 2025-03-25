@@ -1,0 +1,172 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D velocityIn;
+layout (binding = 1, rgba32f) writeonly uniform image2D   velocityOut;
+layout (binding = 2)                    uniform sampler2D boundaryBitmap;
+layout (binding = 3)                    uniform sampler3D bndQuantityIn;
+
+
+uniform float ku_dt;
+uniform float ku_viscosity;
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+vec2 k_unitCoord  = vec2(1) / vec2(ku_simdims);
+vec2 k_simdxdysq  = (ku_simUnitCoord * ku_simUnitCoord);
+vec2 k_simrdxdysq = 1.0f / k_simdxdysq;
+
+
+bool isBoundary(ivec2 coords) 
+{
+    bool outOfBounds = any(bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    ));
+    bool bitmapSays = texelFetch(boundaryBitmap, coords, 0).x > 0.0f;
+    return outOfBounds || bitmapSays;
+}
+
+
+vec2 laplacian(
+    in sampler2D x,
+    in ivec2 ij,
+    in vec2 xij
+);
+vec2 newVelocity(
+    in sampler2D x,
+    in ivec2     ij,
+    in vec2      xij
+);
+
+
+void main()
+{
+    vec4  result = vec4(0);
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+        
+    if(isBoundary(texelCoord))
+        return;
+
+
+    ivec2 neighbouridx[4] = ivec2[4](
+        texelCoord + ivec2(1, 0), /* right */
+        texelCoord - ivec2(1, 0), /* left  */
+        texelCoord + ivec2(0, 1), /* up    */
+        texelCoord - ivec2(0, 1)  /* down  */
+    );
+    float neighbourbnd[4] = float[4](
+        float( isBoundary(neighbouridx[0]) ),
+        float( isBoundary(neighbouridx[1]) ),
+        float( isBoundary(neighbouridx[2]) ),
+        float( isBoundary(neighbouridx[3]) ) 
+    );
+    vec2 neighbourValues[4] = vec2[4](
+        texelFetch(velocityIn, neighbouridx[0], 0).xy,
+        texelFetch(velocityIn, neighbouridx[1], 0).xy,
+        texelFetch(velocityIn, neighbouridx[2], 0).xy,
+        texelFetch(velocityIn, neighbouridx[3], 0).xy
+    );
+    vec4 bndQuantityNeighbours[4] = vec4[4](
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[0], 1), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[1], 0), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[2], 3), 0),
+        texelFetch(bndQuantityIn, ivec3(neighbouridx[3], 2), 0)
+    );
+    // vec4 bndQuantityNeighbours[4] = vec4[4](
+    //     texelFetch(bndQuantityIn, ivec3(neighbouridx[0], 0), 0),
+    //     texelFetch(bndQuantityIn, ivec3(neighbouridx[1], 1), 0),
+    //     texelFetch(bndQuantityIn, ivec3(neighbouridx[2], 2), 0),
+    //     texelFetch(bndQuantityIn, ivec3(neighbouridx[3], 3), 0)
+    // );
+    neighbourValues[0] = mix(neighbourValues[0], bndQuantityNeighbours[0].xy, neighbourbnd[0]);
+    neighbourValues[1] = mix(neighbourValues[1], bndQuantityNeighbours[1].xy, neighbourbnd[1]);
+    neighbourValues[2] = mix(neighbourValues[2], bndQuantityNeighbours[2].xy, neighbourbnd[2]);
+    neighbourValues[3] = mix(neighbourValues[3], bndQuantityNeighbours[3].xy, neighbourbnd[3]);
+
+
+    // float _alpha = ku_viscosity * ku_dt * (k_simrdxdysq.x * k_simrdxdysq.y);
+    // vec2 sigmai = neighbourValues[0] + neighbourValues[1];
+    // vec2 sigmaj = neighbourValues[2] + neighbourValues[3];
+    // float _uij  = (1.0f / _alpha) - 2.0f * (k_simdxdysq.y + k_simdxdysq.x);
+
+    // sigmai *= k_simdxdysq.y;
+    // sigmaj *= k_simdxdysq.x;
+    // result.xy = _alpha * ( sigmai + sigmaj + _uij * texelFetch(velocityIn, texelCoord, 0).xy );
+
+
+
+    vec2 sigmaX = k_simrdxdysq.x * (neighbourValues[0] + neighbourValues[1]);
+    vec2 sigmaY = k_simrdxdysq.y * (neighbourValues[2] + neighbourValues[3]);
+    float alpha = ku_viscosity * ku_dt;
+    float lambda = 1 - alpha * 2 * (k_simrdxdysq.x + k_simrdxdysq.y);
+    result.xy = lambda * texelFetch(velocityIn, texelCoord, 0).xy + alpha * (sigmaX + sigmaY);
+    
+    // result.xy = newVelocity(velocityIn, texelCoord, texelFetch(velocityIn, texelCoord, 0).xy);
+
+    // result.xy = texelFetch(velocityIn, texelCoord, 0).xy;
+    // result.xy += ku_viscosity * ku_dt * laplacian(velocityIn, texelCoord, result.xy);
+
+    imageStore(velocityOut, texelCoord, result);
+    return;
+}
+
+
+vec2 newVelocity(
+    in sampler2D x,
+    in ivec2     ij,
+    in vec2      xij
+) {
+    vec2 neighbours[4] = vec2[4](
+        texelFetch(x, ij + ivec2(1, 0), 0).xy,
+        texelFetch(x, ij - ivec2(1, 0), 0).xy,
+        texelFetch(x, ij + ivec2(0, 1), 0).xy,
+        texelFetch(x, ij - ivec2(0, 1), 0).xy
+    );
+    float _alpha = ku_viscosity * ku_dt * (k_simrdxdysq.x * k_simrdxdysq.y);
+    vec2 sigmai = neighbours[0] + neighbours[1];
+    vec2 sigmaj = neighbours[2] + neighbours[3];
+    float _uij  = (1.0f / _alpha) - 2.0f * (k_simdxdysq.y + k_simdxdysq.x);
+
+    sigmai *= k_simdxdysq.y;
+    sigmaj *= k_simdxdysq.x;
+    return  _alpha * ( sigmai + sigmaj + _uij * xij );
+}
+
+
+vec2 laplacian(
+    in sampler2D x,
+    in ivec2 ij,
+    in vec2 xij
+) {
+    vec2 result = vec2(0.0f);
+    vec2 neighbourValues[4] = vec2[4](
+        texelFetch(x, ij + ivec2(1, 0), 0).xy,
+        texelFetch(x, ij - ivec2(1, 0), 0).xy,
+        texelFetch(x, ij + ivec2(0, 1), 0).xy,
+        texelFetch(x, ij - ivec2(0, 1), 0).xy
+    );
+
+    result += (neighbourValues[0] + neighbourValues[1] - 2.0f * xij) * k_simrdxdysq.y;
+    result += (neighbourValues[2] + neighbourValues[3] - 2.0f * xij) * k_simrdxdysq.x;
+    return result;
+}
+
+
+vec2 laplacian_bnd(
+    in sampler2D x,
+    in ivec2 ij,
+    in vec2 xij
+) {
+    vec2 result = vec2(0.0f);
+    vec2 neighbourValues[4] = vec2[4](
+        texelFetch(x, ij + ivec2(1, 0), 0).xy,
+        texelFetch(x, ij - ivec2(1, 0), 0).xy,
+        texelFetch(x, ij + ivec2(0, 1), 0).xy,
+        texelFetch(x, ij - ivec2(0, 1), 0).xy
+    );
+
+    result += (neighbourValues[0] + neighbourValues[1] - 2.0f * xij) * k_simrdxdysq.y;
+    result += (neighbourValues[2] + neighbourValues[3] - 2.0f * xij) * k_simrdxdysq.x;
+    return result;
+}

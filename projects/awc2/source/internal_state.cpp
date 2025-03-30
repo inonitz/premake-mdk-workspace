@@ -102,7 +102,17 @@ void AWC2ContextData::initialize()
     
     /* ImGui */
     ImGui::SetCurrentContext(__rcast(ImGuiContext*, m_imgui));
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    // io.ConfigViewportsNoAutoMerge = true;
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // io.ConfigViewportsNoTaskBarIcon = true;
+    
+    ImGuiStyle& style = ImGui::GetStyle();
     ImGui::StyleColorsDark();
+    style.WindowRounding = 0.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+
+
     glver = ImGui_ImplGlfw_InitForOpenGL(m_window.underlying_handle(), false);
     glver = glver && ImGui_ImplOpenGL3_Init("#version 450");
     ifcrashstr_debug(!glver, "Failed to initialize AWC2 context\n");
@@ -171,6 +181,15 @@ void AWC2ContextData::end()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
+    /* Temporary until I fully understand how to incorporate this without excess code */
+    GLFWwindow* backup_current_context = glfwGetCurrentContext();
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+    glfwMakeContextCurrent(backup_current_context);
+
+
     m_window.swapBuffers();
     m_io.reset();
     return;

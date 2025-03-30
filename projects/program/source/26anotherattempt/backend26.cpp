@@ -1,8 +1,7 @@
 #include "backend26.hpp"
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include <immintrin.h>
-#include "glbinding/gl/enum.h"
-#include "glbinding/gl/functions.h"
 #include "vars.hpp"
 
 

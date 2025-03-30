@@ -3,6 +3,7 @@
 #include <util/marker2.hpp>
 #include <util/vec2.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 
 
 inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)

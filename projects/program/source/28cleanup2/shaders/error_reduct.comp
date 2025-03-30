@@ -1,0 +1,60 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0) uniform sampler2D errorTexture;
+
+
+struct errorEstimate {
+    vec4 minErr;
+    vec4 maxErr;
+    vec4 avgErr;
+};
+
+
+layout(binding = 1, std430) writeonly buffer reductionBuffer {
+    vec4 errbuf[];
+};
+
+
+uniform int ku_valuesToFetch;
+
+
+int flattenWorkGroupIndex()
+{
+    uvec3 id   = gl_WorkGroupID;
+    uvec3 size = gl_NumWorkGroups;
+    return int( id.x + size.x * (id.y + size.y * id.z) );
+}
+
+
+ivec2 getTexelIndex(in int offset)
+{
+    ivec2 imgsize    = textureSize(errorTexture, 0);
+    int   arrayIndex = ku_valuesToFetch * flattenWorkGroupIndex() + offset;
+    return ivec2(arrayIndex / imgsize.x, arrayIndex % imgsize.x);
+}
+
+
+void main()
+{
+    errorEstimate estimate = errorEstimate(
+        vec4(100000),
+        vec4(0),
+        vec4(0)
+    );
+
+
+    int oneDimensionalGroupIndex = flattenWorkGroupIndex();
+    for(int i = 0; i < ku_valuesToFetch; ++i) {
+        vec4 value = texelFetch(errorTexture, getTexelIndex(i), 0);
+        
+        estimate.minErr = min(estimate.minErr, value);
+        estimate.maxErr = max(estimate.maxErr, value);
+        estimate.avgErr += value;
+    }
+
+
+    errbuf[3 * oneDimensionalGroupIndex + 0] = estimate.minErr;
+    errbuf[3 * oneDimensionalGroupIndex + 1] = estimate.maxErr;
+    errbuf[3 * oneDimensionalGroupIndex + 2] = estimate.avgErr;
+    return;
+}

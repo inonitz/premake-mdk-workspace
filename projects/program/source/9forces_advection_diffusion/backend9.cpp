@@ -2,8 +2,10 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include <util/vec2.hpp>
 #include "gl/shader2.hpp"
+#include <util/marker2.hpp>
 
 
 #if defined __linux__
@@ -118,7 +120,7 @@ void program0::initializeGraphics()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_compute[i].resizeLocalWorkGroup(0, 1, 1, 1);
         alive = alive && g_compute[i].compile();
     }
     ifcrashstr(!alive, "Unsuccessful shader compile");
@@ -178,7 +180,7 @@ void program0::render()
     if(awc2isKeyPressed(AWC2_KEYCODE_R)) {
         for(auto& comp : g_compute) {
             comp.refreshFromFiles();
-            comp.resizeLocalWorkGroup(0, { 1, 1, 1 });
+            comp.resizeLocalWorkGroup(0, 1, 1, 1 );
             status = status && comp.compile();
         }
     }

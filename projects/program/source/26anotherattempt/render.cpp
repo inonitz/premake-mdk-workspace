@@ -1,7 +1,8 @@
 #include "render.hpp"
 #include <util/random.hpp>
 #include <awc2/C/awc2.h>
-#include "glbinding/gl/functions.h"
+#include <util/marker2.hpp>
+#include <util/marker2.hpp>
 #include "util/time.hpp"
 #include "vars.hpp"
 #include "backend26.hpp"
@@ -175,7 +176,11 @@ Compute Time\n\
         bool alive{true};
         for(uint32_t i = 0; alive && i < __carraysize(computeShaderFilename); ++i) {
             g_compute[i].refreshFromFiles();
-            g_compute[i].resizeLocalWorkGroup(0, g_localWorkGroupSize);
+            g_compute[i].resizeLocalWorkGroup(0,
+    g_localWorkGroupSize.x,
+    g_localWorkGroupSize.y,
+    g_localWorkGroupSize.z
+);
             alive = alive && g_compute[i].compile();
         }
         ifcrashstr(!alive, "Unsuccessful shader compile");

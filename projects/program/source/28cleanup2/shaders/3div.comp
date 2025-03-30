@@ -1,0 +1,61 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D intermediateVelocityField;
+layout(binding = 1)                    uniform sampler2D oldPressureFieldValue;
+layout(binding = 2, rgba32f) writeonly uniform image2D   outputField;
+
+
+float FieldDivergence(
+    in ivec2     texCoord,
+    in sampler2D toread
+);
+float simplerDiv(
+    in ivec2     texel,
+    in sampler2D toread
+);
+
+
+uniform vec2 ku_simUnitCoord;
+vec2 k_rdxdy = 1.0f / ku_simUnitCoord;
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec4 result = texelFetch(intermediateVelocityField, texelCoord, 0);
+    
+    result.z = texelFetch(oldPressureFieldValue, texelCoord, 0).z;
+    result.w = FieldDivergence(texelCoord, intermediateVelocityField);
+    imageStore(outputField, texelCoord, result);
+    return;
+}
+
+
+float FieldDivergence(
+    in ivec2     texCoord,
+    in sampler2D toread
+) {
+    float result;
+    vec4 neighbourValues = vec4(
+        texelFetch(toread, texCoord + ivec2(1, 0), 0).x,
+        texelFetch(toread, texCoord - ivec2(1, 0), 0).x,
+        texelFetch(toread, texCoord + ivec2(0, 1), 0).y,
+        texelFetch(toread, texCoord - ivec2(0, 1), 0).y
+    );
+
+
+    result  = (neighbourValues[0] - neighbourValues[1]) * k_rdxdy.x;
+    result += (neighbourValues[2] - neighbourValues[3]) * k_rdxdy.y;
+    return 0.5f * result;
+}
+
+
+float simplerDiv(
+    in ivec2     texel,
+    in sampler2D toread
+) {
+    vec2 dfxdfy = vec2(
+        texelFetch(toread, texel + ivec2(1, 0), 0).x - texelFetch(toread, texel - ivec2(1, 0), 0).x,
+        texelFetch(toread, texel + ivec2(0, 1), 0).y - texelFetch(toread, texel - ivec2(0, 1), 0).y
+    );
+    return 0.5f * dot(dfxdfy, k_rdxdy);
+}

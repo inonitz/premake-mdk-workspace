@@ -4,7 +4,7 @@
 
 
 #ifndef _SELECT_MAIN
-#   define _SELECT_MAIN 26
+#   define _SELECT_MAIN 29
 #endif
 
 #if _SELECT_MAIN == -1
@@ -63,7 +63,13 @@
 #   include "26anotherattempt/aa.hpp"
 #elif _SELECT_MAIN == 27
 #   include "27testsubimage/subimage.hpp"
+#elif _SELECT_MAIN == 28
+#   include "28cleanup2/demo.hpp"
+#elif _SELECT_MAIN == 29
+#   include "29cleanup3/improve.hpp"
 #endif
+
+
 
 
 int main(__unused int argc, __unused char* argv[]) {
@@ -126,7 +132,10 @@ int main(__unused int argc, __unused char* argv[]) {
     out = another_boundary_implementation_attempt();
 #elif _SELECT_MAIN == 27
     out = compute_user_interaction_with_subimage();
-
+#elif _SELECT_MAIN == 28
+    out = gpugems38_demo();
+#elif _SELECT_MAIN == 29
+        out = cleanup329::gpugems38_demo_last();
 #endif
 
 

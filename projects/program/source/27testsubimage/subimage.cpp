@@ -5,12 +5,8 @@
 #include <util/vec2.hpp>
 #include <util/aligned_malloc.hpp>
 #include <awc2/C/awc2.h>
-#include "awc2/C/context.h"
-#include "awc2/C/input.h"
+#include <util/marker2.hpp>
 #include "gl/shader2.hpp"
-#include "glbinding/gl/bitfield.h"
-#include "glbinding/gl/functions.h"
-#include "util/util.hpp"
 
 
 using namespace util::math;
@@ -62,10 +58,10 @@ static inline void render(GLState& gldata)
     u8 status = 1;
     if(awc2isKeyPressed(AWC2_KEYCODE_R)) {
         g_draw.refreshFromFiles();
-        g_draw.resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_draw.resizeLocalWorkGroup(0, 1, 1, 1 );
         status = status && g_draw.compile();
         g_interact.refreshFromFiles();
-        g_interact.resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_interact.resizeLocalWorkGroup(0, 1, 1, 1 );
         status = status && g_interact.compile();
     }
     if(!status)
@@ -173,11 +169,11 @@ i32 compute_user_interaction_with_subimage()
     g_interact.createFrom({
         ShaderData{ computeShaderFilename[0], __scast(u32, gl::GL_COMPUTE_SHADER) }
     });
-    g_interact.resizeLocalWorkGroup(0, { 1, 1, 1 });
+    g_interact.resizeLocalWorkGroup(0, 1, 1, 1 );
     g_draw.createFrom({
         ShaderData{ computeShaderFilename[1], __scast(u32, gl::GL_COMPUTE_SHADER) }
     });
-    g_draw.resizeLocalWorkGroup(0, { 1, 1, 1 });
+    g_draw.resizeLocalWorkGroup(0, 1, 1, 1 );
 
 
     /* setup draw texture */

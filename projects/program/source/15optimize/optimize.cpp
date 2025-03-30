@@ -4,6 +4,7 @@
 #include <threads.h>
 #include <awc2/C/awc2.h>
 #include <util/marker2.hpp>
+#include <util/marker2.hpp>
 
 
 i32 after_measuring_you_cut_the_dead_wood()

@@ -3,6 +3,7 @@
 #include <threads.h>
 #include <awc2/C/awc2.h>
 #include <util/marker2.hpp>
+#include <util/marker2.hpp>
 
 
 i32 compute_shader_draw_full_simulation_field()

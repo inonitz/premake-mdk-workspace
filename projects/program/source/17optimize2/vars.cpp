@@ -1,5 +1,7 @@
 #include "vars.hpp"
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
+
 
 
 namespace optimize17 {
@@ -166,7 +168,7 @@ void initializeGraphics()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, { 64, 1, 1 });
+        g_compute[i].resizeLocalWorkGroup(0, 64, 1, 1);
         alive = alive && g_compute[i].compile();
     }
     // gr_computeDiffusionVel.resizeLocalWorkGroup(0, { 64, 1, 1 });

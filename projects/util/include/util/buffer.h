@@ -69,11 +69,11 @@ UTIL_API const Type* __StructureName##AtConstPtr( \
     __StructureName* buf, \
     u32 index \
 ); \
-UTIL_API void __StructureName##expand( \
+UTIL_API void __StructureName##Expand( \
     __StructureName* buf, \
     u32              newMax \
 ); \
-UTIL_API void __StructureName##push_back( \
+UTIL_API void __StructureName##Push_back( \
     __StructureName* buf, \
     Type*            val \
 ); \
@@ -190,12 +190,12 @@ const Type* __StructureName##AtConstPtr(__StructureName* buf, u32 index)  \
 { \
     return __StructureName##AtPtr(buf, index); \
 } \
-void __StructureName##expand( \
+void __StructureName##Expand( \
     __StructureName* buf, \
     u32              newMax \
 ) { \
     if(!buf->ownptr) { \
-        fputs("__StructureName##expand() => Buffer can't free the old memory it doesn't own\n", stderr); \
+        fputs("__StructureName##Expand() => Buffer can't free the old memory it doesn't own\n", stderr); \
         return; \
     } \
     buf->maximumSize = newMax; \
@@ -205,12 +205,12 @@ void __StructureName##expand( \
     buf->ptr = new_buf.ptr;               /* transfer of pointers, we don't want to destroy buf */ \
     return; \
 } \
-void __StructureName##push_back( \
+void __StructureName##Push_back( \
     __StructureName* buf, \
     Type*            val \
 ) { \
     if(buf->currentSize == buf->maximumSize) \
-        __StructureName##expand( buf, buf->currentSize + (buf->currentSize / 2) ); \
+        __StructureName##Expand( buf, buf->currentSize + (buf->currentSize / 2) ); \
     \
     buf->ptr[buf->currentSize] = *val; \
     ++buf->currentSize; \

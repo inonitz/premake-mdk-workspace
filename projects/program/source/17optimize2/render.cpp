@@ -1,7 +1,8 @@
 #include "render.hpp"
-#include <clocale>
 #include <util/random.hpp>
+#include <util/marker2.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include "vars.hpp"
 #include "backend17.hpp"
 #include <imgui/imgui.h>
@@ -27,7 +28,7 @@ void optimize17::render()
         markstr("Refreshing Compute Shaders...");
         for(auto& comp : g_compute) {
             comp.refreshFromFiles();
-            comp.resizeLocalWorkGroup(0, { 1, 1, 1 });
+            comp.resizeLocalWorkGroup(0, 1, 1, 1 );
             status = status && comp.compile();
         }
     }

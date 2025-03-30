@@ -1,5 +1,4 @@
 #include "shader2.hpp"
-#include "glbinding/gl/functions.h"
 #include "util/file.hpp"
 #include "util/marker2.hpp"
 #include <glbinding/gl/gl.h>
@@ -24,7 +23,7 @@ constexpr const char* shaderTypeToString(u32 type)
 }
 
 
-void writeComputeGroupSizeToShader(char* source, math::vec3u const& size)
+void writeComputeGroupSizeToShader(char* source, u32 sizeX, u32 sizeY, u32 sizeZ)
 {
     constexpr std::array<char[19], 3> substrings = {
             "local_size_x = ",
@@ -34,9 +33,9 @@ void writeComputeGroupSizeToShader(char* source, math::vec3u const& size)
     
 
     const std::array<u32, 3> numberToStringSize = {
-        __scast(u32, ceil( log10(size.x + (size.x == 1u)) )  ),
-        __scast(u32, ceil( log10(size.y + (size.y == 1u)) )  ),
-        __scast(u32, ceil( log10(size.z + (size.z == 1u)) )  ) 
+        __scast(u32, ceil( log10(sizeX + (sizeX == 1u)) )  ),
+        __scast(u32, ceil( log10(sizeY + (sizeY == 1u)) )  ),
+        __scast(u32, ceil( log10(sizeZ + (sizeZ == 1u)) )  ) 
     };
     std::array<char[5], 3> numberToString = {
         "    ",
@@ -46,9 +45,9 @@ void writeComputeGroupSizeToShader(char* source, math::vec3u const& size)
     std::array<char*, 3> positions = { nullptr, nullptr, nullptr };
     
     
-    sprintf(numberToString[0], "%u", size.x);
-    sprintf(numberToString[1], "%u", size.y);
-    sprintf(numberToString[2], "%u", size.z);
+    sprintf(numberToString[0], "%u", sizeX);
+    sprintf(numberToString[1], "%u", sizeY);
+    sprintf(numberToString[2], "%u", sizeZ);
     positions[0] = strstr(source, substrings[0]) + 15;
     positions[1] = strstr(source, substrings[1]) + 15;
     positions[2] = strstr(source, substrings[2]) + 15;
@@ -126,10 +125,10 @@ void Program::refreshShaderSource(u32 shaderID, BufferData const& buffer)
 }
 
 
-void Program::resizeLocalWorkGroup(u32 shaderID, math::vec3u const& workGroupSize)
+void Program::resizeLocalWorkGroup(u32 shaderID, u32 workGroupSizeX, u32 workGroupSizeY, u32 workGroupSizeZ)
 {
     ifcrash_debug(m_shaders[shaderID].type != gl::GL_COMPUTE_SHADER);
-    writeComputeGroupSizeToShader(m_sources[shaderID].data(), workGroupSize);
+    writeComputeGroupSizeToShader(m_sources[shaderID].data(), workGroupSizeX, workGroupSizeY, workGroupSizeZ);
     return;
 }
 
@@ -286,5 +285,4 @@ CREATE_UNIFORM_FUNCTION_IMPL(Matrix2x4fv, f32 const* v, 1, false, v);
 CREATE_UNIFORM_FUNCTION_IMPL(Matrix4x2fv, f32 const* v, 1, false, v);
 CREATE_UNIFORM_FUNCTION_IMPL(Matrix3x4fv, f32 const* v, 1, false, v);
 CREATE_UNIFORM_FUNCTION_IMPL(Matrix4x3fv, f32 const* v, 1, false, v);
-CREATE_UNIFORM_FUNCTION_IMPL(Matrix4fv, math::mat4f const& v, 1, false, v.begin());
 #undef CREATE_UNIFORM_FUNCTION_IMPL

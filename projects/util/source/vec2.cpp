@@ -49,7 +49,7 @@ template<typename T, u8 len> void name( \
     __VA_ARGS__            , \
 	Vector<T, len>& 	  dst \
 ) { \
-	static Vector<T, SET_MULTIPLE_VALUES> tmp; \
+	static Vector<T, SET_MULTIPLE_VALUES> tmp{}; \
 	size_t i  = 0; \
 	\
 	for(; i < (len / SET_MULTIPLE_VALUES); ++i) { \

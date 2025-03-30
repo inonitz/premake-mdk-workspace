@@ -1,6 +1,7 @@
 #include "render.hpp"
 #include <util/random.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include "util/time.hpp"
 #include "vars.hpp"
 #include "backend18.hpp"
@@ -102,11 +103,15 @@ static void render_imgui_interface()
         g_refreshShaderTime.begin();
         for(uint32_t i = 0; shadersGood && i < __carraysize(computeShaderFilename); ++i) {
             g_compute[i].refreshFromFiles();
-            g_compute[i].resizeLocalWorkGroup(0, g_localWorkGroupSize);
+            g_compute[i].resizeLocalWorkGroup(0,
+                g_localWorkGroupSize.x,
+                g_localWorkGroupSize.y,
+                g_localWorkGroupSize.z
+            );
             shadersGood = shadersGood && g_compute[i].compile();
         }
         g_refreshShaderTime.end();
-        
+
 
         return shadersGood;
     };

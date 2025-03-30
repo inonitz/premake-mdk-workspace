@@ -5,6 +5,7 @@
 #include <util/vec2.hpp>
 #include <util/random.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include "gl/shader2.hpp"
 
 
@@ -60,7 +61,7 @@ static inline void render()
     u8 status = 1;
     if(awc2isKeyPressed(AWC2_KEYCODE_R)) {
         g_compute.refreshFromFiles();
-        g_compute.resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_compute.resizeLocalWorkGroup(0, 1, 1, 1 );
         status = g_compute.compile();
     }
     if(!status)
@@ -148,7 +149,7 @@ i32 compute_shader_render_buffer_to_screen()
     g_compute.createFrom({
         ShaderData{ computeShaderFilename, __scast(u32, gl::GL_COMPUTE_SHADER) }
     });
-    g_compute.resizeLocalWorkGroup(0, { 1, 1, 1 });
+    g_compute.resizeLocalWorkGroup(0, 1, 1, 1 );
 
 
     /* setup draw texture */

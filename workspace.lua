@@ -80,6 +80,7 @@ workspace (WORKSPACE_NAME)
         runtime  "Debug"
         symbols  "on"
         optimize "off"
+        buildoptions { "-g" } 
     filter "configurations:Release*"
         defines { "NDEBUG" }
         runtime  "Release"

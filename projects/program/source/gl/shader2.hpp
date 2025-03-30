@@ -1,6 +1,6 @@
 #pragma once
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
+#include <util/base_type.h>
+#include <util/ifcrash.hpp>
 #include <string_view>
 #include <vector>
 
@@ -62,8 +62,8 @@ private:
 
 
 	template<bool typeIsShaderMeta> void createFromCommon(shaderMetaOrBufferMetaType<typeIsShaderMeta> const& meta) {
-		mark(); m_shaders.resize(meta.size());
-		mark(); m_sources.resize(meta.size());
+		m_shaders.resize(meta.size());
+		m_sources.resize(meta.size());
 		if constexpr (typeIsShaderMeta) /* simple copy */ { 
 			m_shaders = meta;
 		} 
@@ -127,7 +127,7 @@ public:
 	}
 	
 	
-	void resizeLocalWorkGroup(u32 shaderID, util::math::vec3u const& workGroupSize);
+	void resizeLocalWorkGroup(u32 shaderID, u32 workGroupSizeX, u32 workGroupSizeY, u32 workGroupSizeZ);
 	
 
 	/*
@@ -197,7 +197,7 @@ public:
 	CREATE_UNIFORM_FUNCTION_DEFINITON(Matrix4x2fv, f32 const* v)
 	CREATE_UNIFORM_FUNCTION_DEFINITON(Matrix3x4fv, f32 const* v)
 	CREATE_UNIFORM_FUNCTION_DEFINITON(Matrix4x3fv, f32 const* v)
-	CREATE_UNIFORM_FUNCTION_DEFINITON(Matrix4fv, util::math::mat4f const& v)
+
 #undef CREATE_UNIFORM_FUNCTION_DEFINITON
 
 

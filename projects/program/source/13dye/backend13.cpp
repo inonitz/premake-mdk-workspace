@@ -2,11 +2,13 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include <threads.h>
 #include <util/vec2.hpp>
 #include <util/random.hpp>
 #include <util/time.hpp>
 #include "gl/shader2.hpp"
+#include <util/marker2.hpp>
 
 
 
@@ -155,7 +157,7 @@ void program4::initializeGraphics()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_compute[i].resizeLocalWorkGroup(0, 1, 1, 1);
         alive = alive && g_compute[i].compile();
     }
     ifcrashstr(!alive, "Unsuccessful shader compile");
@@ -232,7 +234,7 @@ void program4::render()
         markstr("Refreshing Compute Shaders...");
         for(auto& comp : g_compute) {
             comp.refreshFromFiles();
-            comp.resizeLocalWorkGroup(0, { 1, 1, 1 });
+            comp.resizeLocalWorkGroup(0, 1, 1, 1 );
             status = status && comp.compile();
         }
     }

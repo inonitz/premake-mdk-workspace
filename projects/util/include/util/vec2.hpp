@@ -22,7 +22,7 @@ private:
     
 public:
 	void zero() { 
-        for(u32 i = 0; i < length; ++i) {
+        for(u32 i = 0; i < __carraysize(__data); ++i) {
             __data[i] = __scast(T, 0x00); 
         }
         return;
@@ -32,7 +32,7 @@ public:
 	constexpr Vector() { zero(); }
 	constexpr Vector(const_ref<T> defaultVal) 
 	{
-		for(u32 i = 0; i < length; i += 2)  {
+		for(u32 i = 0; i < __carraysize(__data); i += 2)  {
 			__data[i    ] = defaultVal;
 			__data[i + 1] = defaultVal;
 		}
@@ -263,6 +263,14 @@ DEFINE_VECTOR_STRUCTURE( \
 		w = d;
 		return; 
 	}
+	explicit vec4u(i32 a, i32 b, i32 c, i32 d)
+	{
+		x = __scast(u32, a);
+		y = __scast(u32, b);
+		z = __scast(u32, c);
+		w = __scast(u32, d);
+		return;
+	}
 	vec4u(__m128i mm) : xmm(mm) {}
 )
 DEFINE_VECTOR_STRUCTURE( \
@@ -377,7 +385,7 @@ DEFINE_CROSSPROD_FUNC(i32, 3i)
 
 
 
-template<typename T> struct UTIL_API matrixView {
+template<typename T> struct matrixView {
     using cref = matrixView const&;
 
 
@@ -386,7 +394,7 @@ template<typename T> struct UTIL_API matrixView {
 	i32 m_columns;
 
 
-    matrixView() : m_buf(nullptr) {}
+    matrixView<T>() : m_buf(nullptr) {}
     explicit matrixView(T* validAddr, i32 rows, i32 columns) {
 		m_buf 	  = validAddr;
 		m_rows 	  = rows;

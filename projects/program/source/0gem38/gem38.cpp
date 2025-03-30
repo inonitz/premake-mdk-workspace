@@ -5,6 +5,7 @@
 #include <util/vec2.hpp>
 #include <util/random.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include "gl/shader2.hpp"
 #include "glbinding/gl/bitfield.h"
 #include "glbinding/gl/enum.h"
@@ -191,7 +192,7 @@ i32 gpugems38_main()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_compute[i].resizeLocalWorkGroup(0, 1, 1, 1);
         ok = ok && g_compute[i].compile();
     }
     ifcrashstr(!ok, "Unsuccessful shader compile");
@@ -301,7 +302,7 @@ static void render()
     u8 status = 1;
     if(awc2isKeyPressed(AWC2_KEYCODE_R)) {
         // g_compute.refreshFromFiles();
-        // g_compute.resizeLocalWorkGroup(0, { 1, 1, 1 });
+        // g_compute.resizeLocalWorkGroup(0, 1, 1, 1 );
         // status = g_compute.compile();
     }
     if(!status)

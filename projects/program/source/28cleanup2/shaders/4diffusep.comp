@@ -1,0 +1,73 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout (binding = 0)                    uniform sampler2D pressureIn;
+layout (binding = 1, rgba32f) writeonly uniform image2D   pressureOut;
+
+
+bvec4 isBoundary(ivec2 coords);
+float updated_pressure(
+    in sampler2D tex,
+    in ivec2     ij,
+    in vec2      dxdysq,
+    in float     alpha
+);
+
+
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+uniform float ku_inverseDensity;
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    bvec4 boundary     = isBoundary(texelCoord);
+    ivec2 texelToFetch = texelCoord + ivec2(boundary.xy) - ivec2(boundary.zw);
+    vec4  result       = texelFetch(pressureIn, texelCoord, 0);
+    float tmp0, tmp1;
+
+
+    tmp0 = texelFetch(pressureIn, texelToFetch, 0).z;
+    tmp1 = ku_inverseDensity * updated_pressure(
+        pressureIn, 
+        texelCoord, 
+        ku_simUnitCoord * ku_simUnitCoord, 
+        result.w
+    );
+    result.z = mix(tmp1, tmp0, float(any(boundary)));
+    imageStore(pressureOut, texelCoord, result);
+    return;
+}
+
+
+bvec4 isBoundary(ivec2 coords) {
+    return bvec4(
+        coords.x <= 0, 
+        coords.y <= 0,
+        coords.x >= (ku_simdims.x - 1),
+        coords.y >= (ku_simdims.y - 1)
+    );
+}
+
+
+float updated_pressure(
+    in sampler2D tex,
+    in ivec2     ij,
+    in vec2      dxdysq,
+    in float     alpha
+) {
+    vec4 neighbours = vec4(
+        texelFetch(tex, ij + ivec2(1, 0), 0).z,
+        texelFetch(tex, ij - ivec2(1, 0), 0).z,
+        texelFetch(tex, ij + ivec2(0, 1), 0).z,
+        texelFetch(tex, ij - ivec2(0, 1), 0).z
+    );
+    
+    float sum = 0.0f;
+    sum += dxdysq.y * ( neighbours[0] + neighbours[1] );
+    sum += dxdysq.x * ( neighbours[2] + neighbours[3] );
+    sum -= alpha * dxdysq.x * dxdysq.y;
+    sum *= 0.5f;
+    sum *= 1.0f / (dxdysq.x + dxdysq.y);
+    return sum;
+}

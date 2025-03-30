@@ -3,6 +3,7 @@
 #include <threads.h>
 #include <awc2/C/awc2.h>
 #include <util/marker2.hpp>
+#include <util/marker2.hpp>
 
 
 i32 measure_diffusion_and_work_distribution_across_shaders_also_revalidate_parallel_reduction()

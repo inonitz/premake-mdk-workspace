@@ -1,0 +1,40 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0) uniform sampler2D originalTexture;
+layout(binding = 1, std430) writeonly buffer reductionMaximumBuffer {
+    vec4 buf_maximum[];
+};
+
+
+uniform int ku_valuesToFetch;
+
+
+int flattenWorkGroupIndex()
+{
+    uvec3 id   = gl_WorkGroupID;
+    uvec3 size = gl_NumWorkGroups;
+    return int( id.x + size.x * (id.y + size.y * id.z) );
+}
+
+
+ivec2 getTexelIndex(in int offset)
+{
+    ivec2 imgsize    = textureSize(originalTexture, 0);
+    int   arrayIndex = ku_valuesToFetch * flattenWorkGroupIndex() + offset;
+    return ivec2(arrayIndex / imgsize.x, arrayIndex % imgsize.x);
+}
+
+
+void main()
+{
+    vec4 maximum;
+    vec4 val;
+
+    int oneDimensionalGroupIndex = flattenWorkGroupIndex();
+    for(int i = 0; i < ku_valuesToFetch; i++) {
+        val = texelFetch(originalTexture, getTexelIndex(i), 0);
+        maximum = max(maximum, val);
+    }
+    buf_maximum[oneDimensionalGroupIndex] = maximum;
+    return;
+}

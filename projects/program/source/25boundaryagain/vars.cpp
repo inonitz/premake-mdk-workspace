@@ -3,6 +3,7 @@
 #include "glbinding/gl/functions.h"
 #include "util/aligned_malloc.hpp"
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 
 
 namespace makebelievebound25 {
@@ -225,7 +226,11 @@ void initializeGraphics()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, g_localWorkGroupSize);
+        g_compute[i].resizeLocalWorkGroup(0,
+    g_localWorkGroupSize.x,
+    g_localWorkGroupSize.y,
+    g_localWorkGroupSize.z
+);
         alive = alive && g_compute[i].compile();
     }
     ifcrashstr(!alive, "Unsuccessful shader compile");

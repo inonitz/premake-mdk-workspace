@@ -6,6 +6,7 @@
 #include <util/vec2.hpp>
 #include <util/random.hpp>
 #include <awc2/C/awc2.h>
+#include <util/marker2.hpp>
 #include "awc2/C/input.h"
 #include "gl/shader2.hpp"
 #include "glbinding/gl/enum.h"
@@ -129,7 +130,7 @@ static inline void render()
     if(awc2isKeyPressed(AWC2_KEYCODE_R)) {
         for(auto& comp : g_compute) {
             comp.refreshFromFiles();
-            comp.resizeLocalWorkGroup(0, { 1, 1, 1 });
+            comp.resizeLocalWorkGroup(0, 1, 1, 1 );
             status = status && comp.compile();
         }
     }
@@ -279,7 +280,7 @@ i32 compute_buffer_mouse_but_with_diffusion()
         g_compute[i].createFrom({
             ShaderData{ computeShaderFilename[i], __scast(u32, gl::GL_COMPUTE_SHADER) }
         });
-        g_compute[i].resizeLocalWorkGroup(0, { 1, 1, 1 });
+        g_compute[i].resizeLocalWorkGroup(0, 1, 1, 1);
         alive = alive && g_compute[i].compile();
     }
     ifcrashstr(!alive, "Unsuccessful shader compile");

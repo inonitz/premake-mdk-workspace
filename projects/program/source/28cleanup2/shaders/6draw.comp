@@ -1,0 +1,182 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D fieldSampler;
+layout(binding = 1)                    uniform sampler3D fieldSampler3D;
+layout(binding = 2, rgba32f) writeonly uniform image2D   screentexture;
+
+
+#define TEXTURE_DRAW_DYE               0x00
+#define TEXTURE_DRAW_VELOCITY_PRESSURE 0x01
+#define TEXTURE_DRAW_CURL              0x02
+#define TEXTURE_DRAW_ABS_CURL          0x03
+#define TEXTURE_DRAW_ERROR_VELOCITY    0x04
+#define TEXTURE_DRAW_ERROR_PRESSURE    0x05
+#define TEXTURE_DRAW_BOUNDARY          0x06
+#define TEXTURE_DRAW_VELOCITY_X        0x07
+#define TEXTURE_DRAW_VELOCITY_Y        0x08
+#define TEXTURE_DRAW_PREESURE          0x09
+#define TEXTURE_DRAW_BOUNDARY_VALUE_VEL      0x0A
+#define TEXTURE_DRAW_BOUNDARY_VALUE_PRESSURE 0x0B
+
+
+uniform uint  ku_selectTextureDraw;
+uniform float ku_brightness;
+uniform ivec2 ku_simdims;
+uniform vec2  ku_simUnitCoord;
+vec2 k_unitCoord = vec2(1) / vec2(ku_simdims);
+vec2 k_rdxdy     = vec2(1) / ku_simUnitCoord;
+
+
+vec4 getDensityColor(in float density)
+{
+    const vec4 map[3] = {
+        vec4(1.0f, 0.0f, 0.0f, 1.0f),
+        vec4(0.0f, 0.0f, 1.0f, 1.0f),
+        vec4(1.0f, 1.0f, 1.0f, 1.0f),
+    };
+    return map[ uint(density > 0.0f) + uint(density == 0.0f) * 2 ];
+}
+
+
+float curl2D(
+    in sampler2D tex,
+    in ivec2     texel
+) {
+    float samples[4] = float[4](
+        texelFetch(tex, texel + ivec2(1, 0), 0).x,
+        texelFetch(tex, texel - ivec2(1, 0), 0).x,
+        texelFetch(tex, texel + ivec2(0, 1), 0).y,
+        texelFetch(tex, texel - ivec2(0, 1), 0).y
+    );
+    
+    vec2 temp = vec2(samples[2] - samples[3], samples[0] - samples[1]);
+    temp *= k_rdxdy * 0.5f;
+    
+    return temp.x - temp.y;
+}
+
+/* 
+    On Colourmaps:
+    https://blog.habrador.com/2023/04/colormaps-overview-code-implementations-rainbow-virids.html
+    See Also:
+    https://www.kennethmoreland.com/color-advice/
+*/
+vec4 colourMap(in float value)
+{
+    const vec4 colourmap[8] = vec4[8](
+        vec4(0	              , 0.267003985321379,	0.0048725657145796,	0.329415068552478),
+        vec4(0.142857142857143, 0.274741031994728,	0.196973267359168,	0.497250443407826),
+        vec4(0.285714285714286, 0.21267123715448,	0.359101377053754,	0.551635046867701),
+        vec4(0.428571428571429, 0.152958098732024,	0.498051451273065,	0.557685326908152),
+        vec4(0.571428571428571, 0.122053591816304,	0.63210554298126,	0.530848865724732),
+        vec4(0.714285714285714, 0.290013937283251,	0.758845118505219,	0.427827160921214),
+        vec4(0.857142857142857, 0.622182341062654,	0.853814292866397,	0.226247911149647),
+        vec4(1	              , 0.99324814893356,	0.906154763420806,	0.143935943669684)
+    );
+
+
+    if(value < 0.0f)
+        return vec4(1, 0, 0, 0);
+    
+    if(value > 1.0f)
+        return vec4(1);
+    
+
+    value = clamp(value, 0.0f, 1.0f);
+    bool found = false;
+    int i = 0;
+    while(!found && i < 7 ) {
+        found = (colourmap[i].x < value && value < colourmap[i+1].x); 
+        i += int(!found);
+    }
+
+
+    return vec4(
+        mix(
+            colourmap[i+1].yzw,
+            colourmap[i].yzw, 
+            value / (colourmap[i+1].x - colourmap[i].x)
+        ), 0
+    );
+}
+
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 norm_texcoord = vec2(texelCoord) / vec2(ku_simdims);
+    
+    vec4 write_value = texelFetch(fieldSampler, texelCoord, 0);
+    switch(ku_selectTextureDraw) {
+        case TEXTURE_DRAW_DYE:
+        break;
+        case TEXTURE_DRAW_BOUNDARY:
+        break;
+        case TEXTURE_DRAW_VELOCITY_PRESSURE:
+        write_value *= ku_brightness;
+        break;
+        case TEXTURE_DRAW_CURL:
+        write_value = colourMap(curl2D(fieldSampler, texelCoord));
+        break;
+        case TEXTURE_DRAW_ABS_CURL:
+        write_value = colourMap(ku_brightness * abs(curl2D(fieldSampler, texelCoord)));
+        break;
+        case TEXTURE_DRAW_ERROR_VELOCITY:
+        write_value = vec4(ku_brightness * abs(write_value.xy), 0, 0);
+        break;
+        case TEXTURE_DRAW_ERROR_PRESSURE:
+        write_value = vec4(0, 0, ku_brightness * abs(write_value.z), 0);
+        break;
+        case TEXTURE_DRAW_VELOCITY_X:
+        write_value = colourMap(ku_brightness * write_value.x);
+        break;
+        case TEXTURE_DRAW_VELOCITY_Y:
+        write_value = colourMap(ku_brightness * write_value.y);
+        break;
+        case TEXTURE_DRAW_PREESURE:
+        write_value = colourMap(ku_brightness * write_value.z);
+        break;
+        case TEXTURE_DRAW_BOUNDARY_VALUE_VEL:
+        write_value = vec4(0);
+        ivec2 sampleIndicesVel[4] = ivec2[4](
+            texelCoord + ivec2(1, 0),
+            texelCoord - ivec2(1, 0),
+            texelCoord + ivec2(0, 1),
+            texelCoord - ivec2(0, 1)
+        );
+        vec2 samplesVel[4] = vec2[4](
+            texelFetch(fieldSampler3D, ivec3(sampleIndicesVel[0], 0), 0).xy,
+            texelFetch(fieldSampler3D, ivec3(sampleIndicesVel[1], 1), 0).xy,
+            texelFetch(fieldSampler3D, ivec3(sampleIndicesVel[2], 2), 0).xy,
+            texelFetch(fieldSampler3D, ivec3(sampleIndicesVel[3], 3), 0).xy
+        );
+        write_value = ku_brightness * vec4(
+            length(samplesVel[0]), 
+            length(samplesVel[1]), 
+            length(samplesVel[2]), 
+            length(samplesVel[3])
+        );
+        // write_value = ku_brightness * vec4(abs(samplesVel[0]), 0, 0);
+        break;
+        case TEXTURE_DRAW_BOUNDARY_VALUE_PRESSURE:
+        write_value = vec4(0);
+        ivec2 sampleIndices[4] = ivec2[4](
+            texelCoord + ivec2(1, 0),
+            texelCoord - ivec2(1, 0),
+            texelCoord + ivec2(0, 1),
+            texelCoord - ivec2(0, 1)
+        );
+        float samples[4] = float[4](
+            texelFetch(fieldSampler3D, ivec3(sampleIndices[0], 0), 0).z,
+            texelFetch(fieldSampler3D, ivec3(sampleIndices[1], 1), 0).z,
+            texelFetch(fieldSampler3D, ivec3(sampleIndices[2], 2), 0).z,
+            texelFetch(fieldSampler3D, ivec3(sampleIndices[3], 3), 0).z
+        );
+        write_value = ku_brightness * abs(vec4(samples[0], samples[1], samples[3], 1));
+        break;
+        default:
+        break;
+    }
+    imageStore(screentexture, texelCoord, write_value);
+    return;
+}

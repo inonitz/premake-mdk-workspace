@@ -1,0 +1,49 @@
+#version 450 core
+layout(local_size_x =   5, local_size_y =   5, local_size_z =   5) in;
+layout(binding = 0)                    uniform sampler2D intermediateVelocity; /* [ w.x, w.y, new_p, div(p) ]*/
+layout(binding = 0)                    uniform sampler2D intermediatePressure; /* [ w.x, w.y, new_p, div(p) ]*/
+layout(binding = 1, rgba32f) writeonly uniform image2D   updatedFields;
+
+
+
+vec2 PressureGradient2(
+    in sampler2D tex,
+    in ivec2     texel,
+    in vec2      dx_dy
+);
+
+
+uniform vec2 ku_simUnitCoord;
+
+void main()
+{
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 pGrad; 
+    vec4 valueij; 
+    
+    pGrad  = texelFetch(intermediateVelocity, texelCoord, 0).xy;
+    pGrad -= PressureGradient2(intermediatePressure, texelCoord, ku_simUnitCoord);
+    valueij = vec4(pGrad, texelFetch(intermediatePressure, texelCoord, 0).z, 0); 
+    imageStore(updatedFields, texelCoord, valueij);
+    return;
+}
+
+
+vec2 PressureGradient2(
+    in sampler2D tex,
+    in ivec2     texel,
+    in vec2      dx_dy
+) {
+    vec2 result = vec2(0);
+    vec4 neighbours = vec4(
+        texelFetch(tex, texel + ivec2(1, 0), 0).z,
+        texelFetch(tex, texel - ivec2(1, 0), 0).z,
+        texelFetch(tex, texel + ivec2(0, 1), 0).z,
+        texelFetch(tex, texel - ivec2(0, 1), 0).z
+    );
+
+    dx_dy = vec2(0.5f) / dx_dy;
+    result.x = dx_dy.x * (neighbours[0] - neighbours[1]);
+    result.y = dx_dy.y * (neighbours[2] - neighbours[3]);
+    return result;
+}

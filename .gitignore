@@ -5,7 +5,7 @@ build/
 Makefile
 
 # Visual Studio Code files
-.vscode/launch.json
+# .vscode/launch.json
 # .vscode/settings.json
 
 # clangd Compilation Database

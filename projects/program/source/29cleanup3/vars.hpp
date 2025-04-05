@@ -3,6 +3,7 @@
 #include <util/vec2.hpp>
 #include <glbinding/gl/types.h>
 #include "gl/shader2.hpp"
+#include "gl/gltimer.hpp"
 
 
 namespace cleanup329 {
@@ -15,9 +16,24 @@ enum class FillType : u8 {
     NONE           = 0x00,
     DYE            = 0x01,
     FORCE          = 0x02,
-    BOUNDARY       = 0x03,
-    FILL_TYPE_MAX  = 0x04
+    FORCE_AND_DYE  = 0x03,
+    BOUNDARY       = 0x04,
+    FILL_TYPE_MAX  = 0x05
 };
+
+
+inline const char* fillTypeToString(FillType type)
+{
+    static constexpr const char* strs[6] = {
+        "NONE         ",
+        "DYE          ",
+        "FORCE        ",
+        "FORCE_AND_DYE",
+        "BOUNDARY     ",
+        "FILL_TYPE_MAX"
+    };
+    return strs[__scast(u8, type)];
+}
 
 
 enum class DrawTarget : u8 {
@@ -31,16 +47,26 @@ enum class DrawTarget : u8 {
     VELOCITY_X        = 0x07,
     VELOCITY_Y        = 0x08,
     PREESURE          = 0x09,
-    DRAW_TARGET_MAX   = 0x0A
+    CFL_CONTOUR       = 0x0A,
+    DRAW_TARGET_MAX   = 0x0B
+};
+
+
+enum class ColourMap : u8 {
+    INFERNO = 0,
+    VIRDIS  = 1,
+    FAST    = 2
 };
 
 
 struct FluidSource {
     bool     m_enabled;
+    bool     m_static;
     FillType m_type;
-    u8       m_reserved[2];
+    u8       m_reserved[1];
     f32      m_radius;
     vec2f    m_position;
+    vec4f    m_force;
     vec4f    m_color;
 };
 
@@ -58,22 +84,29 @@ extern i64                g_maxFrameTimeNs;
 extern i64                g_avgFrameTimeNs;
 extern const i64          g_slowRenderDurationNs;
 extern i64                g_waitTime;
-extern Time::Timestamp    g_timerBuffer[16];
-extern Time::Timestamp&   g_frameTime;
-extern Time::Timestamp&   g_renderTime;
-extern Time::Timestamp&   g_beginFrameTime;
-extern Time::Timestamp&   g_endFrameTime;
-extern Time::Timestamp&   g_computeFluidTime;
-extern Time::Timestamp&   g_computeVelTime;
-extern Time::Timestamp&   g_computeDyeTime;
-extern Time::Timestamp&   g_computeCFLTime;
+extern Time::Timestamp    g_cpuTimerBuffer[16];
+extern Time::GPUTimer     g_gpuTimerBuffer[5];
+
+extern Time::Timestamp&   g_frameTime             ;
+extern Time::Timestamp&   g_beginFrameTime        ;
+extern Time::Timestamp&   g_fluidUpdateTime       ;
+extern Time::Timestamp&   g_computeVelTime        ;
+extern Time::Timestamp&   g_computeDyeTime        ;
+extern Time::Timestamp&   g_computeCFLTime        ;
 extern Time::Timestamp&   g_computeErrEstimateTime;
-extern Time::Timestamp&   g_computeMaximumCPU;
-extern Time::Timestamp&   g_computeMaximumGPU;
-extern Time::Timestamp&   g_computeErrorGPU;
-extern Time::Timestamp&   g_computeErrorCPU;
-extern Time::Timestamp&   g_renderImguiTime;
-extern Time::Timestamp&   g_renderScreenTime;
+extern Time::Timestamp&   g_renderScreenTime      ;
+extern Time::Timestamp&   g_renderImGuiTime       ;
+extern Time::Timestamp&   g_renderBlitTime        ;
+extern Time::Timestamp&   g_endFrameTime          ;
+extern Time::Timestamp&   g_computeMaximumCPU     ;
+extern Time::Timestamp&   g_computeMaximumGPU     ;
+extern Time::Timestamp&   g_computeErrorGPU       ;
+extern Time::Timestamp&   g_computeErrorCPU       ;
+extern Time::GPUTimer&    g_computeVelTimeGPU     ;
+extern Time::GPUTimer&    g_computeDyeTimeGPU     ;
+extern Time::GPUTimer&    g_computeCFLTimeGPU     ;
+extern Time::GPUTimer&    g_computeErrTimeGPU     ;
+extern Time::GPUTimer&    g_computeScreenTimeGPU  ;
 
 
 /* Compute Parameters */
@@ -102,11 +135,15 @@ extern f32   g_unitLength        ;
 /* User Interaction/Info */
 extern std::vector<FluidSource> g_sources;
 extern bool       g_imGuiButton[20];
+extern bool       g_enableGPUTimers;
+extern u64        g_mostRecentSource;
 extern DrawTarget g_chooseTextureToRender;
+extern ColourMap  g_chooseColourMap;
 extern f32        g_textureHighlightSmallValue;
 extern f32        g_maxSpectralRadius;
 extern f32        g_iterationErrorN;
 extern vec2f      g_maxVelocity;
+extern vec2f      g_colorTableMinMax;
 extern vec4f      g_prevErrorValues[3];
 extern vec4f      g_currErrorValues[3];
 

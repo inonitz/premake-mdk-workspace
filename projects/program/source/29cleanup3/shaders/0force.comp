@@ -35,7 +35,7 @@ uniform vec2  ku_simUnitCoord;
 uniform vec2  ku_sourcePosition;   /* in pixels  */
 uniform vec4  ku_sourceValue;
 uniform float ku_sourceRadius; /* in texture space (0->1) */
-uniform uint  ku_mousePressed;
+uniform uint  ku_enabled;
 uniform uint  ku_interactType;
 
 vec2 k_winUnitCoord = vec2(1) / vec2(ku_windims);
@@ -55,7 +55,7 @@ void main()
     norm_mousepos.y = 1.0f - norm_mousepos.y;
 
 
-    if(bool(ku_mousePressed)) 
+    if(bool(ku_enabled)) 
     {
         switch(ku_interactType) {
             case USER_DRAW_FILL_TYPE_DYE: /* Dye */
@@ -76,7 +76,7 @@ void main()
                 false
             );
             if(ku_vorticityFactor != 0.0f) {
-                userInteractionValue.xy += ku_dt * vorticityForce(
+                userInteractionValue.xy += vorticityForce(
                     prevFrame, 
                     texelCoord, 
                     ku_vorticityFactor

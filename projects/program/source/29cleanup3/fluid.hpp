@@ -6,7 +6,7 @@ namespace cleanup329::fluid {
 
 void clear();
 void update();
-void addSource();
+void addSourceDefault();
 bool recompileComputeShaders();
 
 

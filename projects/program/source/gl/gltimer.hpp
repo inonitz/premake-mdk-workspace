@@ -1,41 +1,33 @@
 #ifndef __OPENGL_OBJECTS_TIMER__
 #define __OPENGL_OBJECTS_TIMER__
-#include <util/types.hpp>
-
-
-namespace globj {
+#include <util/base_type.h>
 
 
 /* Implemented with help from https://www.lighthouse3d.com/tutorials/opengl-timer-query/ */
-template<u32 QueryCountForSwapping = 2> struct Timer 
+namespace Time {
+
+
+struct GPUTimer 
 {
 public:
-    void create();
+	using type_t = GPUTimer;
+
+
+	void create();
 	void destroy();
-    void startQuery();
-    void endQuery();
-	void nextQuery()
-    {
-		++swapIndex;
-		swapIndex *= (swapIndex != QueryCountForSwapping); /* if not equal, keep swapIdx; else set 0 */
-		return;
-	}
-	u64 currentFrameCount()  const { return nextFrame; }
-	u64 previousFrameCount() const { return prevFrame; }
+	static void begin(type_t& timer);
+	static void end(type_t& timer);
 
-
+	/* after calling GPUTimer::end(), calling currentFrame() might not have a value yet */
+	u64 currentFrame()  const { return m_query_result[1]; }
+	u64 previousFrame() const { return m_query_result[0]; }
 private:
-	/* 2 queries per swap, so that 1 query won't stall the rest of the program. */
-    struct timer_query_pair_array
-    {
-        u32 query[2];
-    } buf[QueryCountForSwapping];
-	u32 swapIndex{0};
-	u64 prevFrame{0}, nextFrame{0};
+	u32 m_query[2];
+	u64 m_query_result[2];
 };
 
 
-} // namespace globj
+} /* namespace Timer */
 
 
 #endif

@@ -3,57 +3,47 @@
 #include <glbinding/gl/enum.h>
 
 
-namespace globj {
-
-
-template<u32 querySwapSize> void Timer<querySwapSize>::create()
+void Time::GPUTimer::create()
 {
-    gl::glCreateQueries(gl::GL_TIMESTAMP, querySwapSize << 1, &buf[0].query[0]);
-    return;
-}
-
-template<u32 querySwapSize> void Timer<querySwapSize>::destroy()
-{
-    gl::glDeleteQueries(querySwapSize << 1, &buf[0].query[0]);
+    // gl::glCreateQueries(gl::GL_TIMESTAMP, 2, &m_query[0]);
+    gl::glGenQueries(2, &m_query[0]);
     return;
 }
 
 
-template<u32 querySwapSize> void Timer<querySwapSize>::startQuery() 
+void Time::GPUTimer::destroy()
 {
-    /* query current elapsed time on gpu into q0 [the 'backbuffer'] (q1 is the 'frontbuffer') */
-    gl::glBeginQuery(gl::GL_TIME_ELAPSED, buf[swapIndex].query[0]);
+    gl::glDeleteQueries(2, &m_query[0]);
     return;
 }
 
-template<u32 querySwapSize> void Timer<querySwapSize>::endQuery()
+
+void Time::GPUTimer::begin(type_t& timer)
+{
+    /* Place Resulted Query in query[0] 'backbuffer' */
+    gl::glBeginQuery(gl::GL_TIME_ELAPSED, timer.m_query[0]);
+    return;
+}
+
+
+void Time::GPUTimer::end(type_t& timer)
 {
     gl::glEndQuery(gl::GL_TIME_ELAPSED);
-    prevFrame = nextFrame;
+
+    /* update the result from the previous frame */
+    timer.m_query_result[0] = timer.m_query_result[1];
     gl::glGetQueryObjectui64v(
-        buf[swapIndex].query[1], 
+        timer.m_query[0], 
         gl::GL_QUERY_RESULT, 
-        &nextFrame
+        &timer.m_query_result[1]
     );
+
+    std::swap(timer.m_query[0], timer.m_query[1]);
     return;
 }
 
 
-template void Timer<2>::create();
-template void Timer<2>::destroy();
-template void Timer<2>::startQuery();
-template void Timer<2>::endQuery();
-template void Timer<4>::create();
-template void Timer<4>::destroy();
-template void Timer<4>::startQuery();
-template void Timer<4>::endQuery();
-template void Timer<8>::create();
-template void Timer<8>::destroy();
-template void Timer<8>::startQuery();
-template void Timer<8>::endQuery();
 
-
-} // namespace globj
 /* 
     int done = 0;
     while(!done) {

@@ -27,7 +27,8 @@ The following code simulates a 2D Incompressible Fluid using an:
 * System-of-Equations Jacobi Method Solver [Very easy to implement GPGPU]
 * Central Difference for Approximating Calculus Operators [O(x^2) Error]
 
-**Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)
+* **Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)
+**[Here](https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)) is a wikipedia article describing the method of solution**
 
 <br>
 
@@ -36,11 +37,14 @@ The currently most-updated revision ```23multigrid/``` features the following:
 * Vorticity Confinement with variable coefficient
 * Variable Kinematic Viscosity, Delta Time & Poisson-Solver Iterations
 * Real-Time CFL/Reynolds Number Calculations (they're there to check solver correctness/stability)
-* Visualizations of Calculation Textures, in particular Force/Dye/Curl/Absolute Curl/Velocity Error/Pressure Error
-* Real-Time Measurements of internal solver components:
-  * **Due to performance investigations, I came to a conclusion that OpenGL fills a command-buffer, which is then dispatched only on glfwSwapBuffers()**
-  * **Therefore, if ```FrameTime = 9.8ms``` != ```Sum(All_Other_Timers)``` =>**
-    * **```Remaining Time``` = GPU-Time Required to do the work + Ensuring CPU-Side Buffer Visiblity**
+* Visualizations of Calculation Textures, in particular Velocity-Pressure/Dye/Curl/Absolute Curl/Velocity Error/Pressure Error/Velocity-X/Velocity-Y/Pressure/CFL
+* Real-Time Measurements of internal solver components - CPU & GPU Side:
+  * A GPU Timer (gl-Begin/End-Query) essentially acts as a fence,   
+    waiting for all previous GPU commands to finish  
+    **In Short: Using GPU Timers degrades Performance by a few milliseconds**
+
+  * When GPU Timers are not used, the calculations will be deferred until glfwSwapbuffers(),
+    which by then will be dispatched & computed, updating glMemoryBarrier
 
 </br>
 
@@ -54,7 +58,7 @@ Tomorrow, Im Tired lol :)
 ### Project Structure
 The Underlying Project Structure uses my [premake5-workspace-template](https://github.com/inonitz/premake5-workspace-template) repo,  
 You can expect the [```program/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program) folder to occupy all revisions of the fluid-solver,   
-culminating eventually with [```23multigrid/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program/source/23multigrid) as the currently best revision
+culminating eventually with [```29cleanup3/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program/source/29cleanup3) as the currently best revision
 <br>
 <br>
 <br>
@@ -116,7 +120,7 @@ premake5 --os=windows/linux --arch=x86_64 buildallrel
 ```  
 **DLL/Shared Library Builds: (premake5 gmake2, config=releasedll_amd64)**
 ```sh
-./build/bin/ReleaseLib_amd64/program
+./build/bin/ReleaseDll_amd64/program
 ```
 **Visual Studio 2022 - Just Run normally using ```Local Windows Debugger```**
 
@@ -126,7 +130,7 @@ premake5 --os=windows/linux --arch=x86_64 buildallrel
 - Adding Arbitrary boundaries
 - Extending to 3D
 - MAC Staggered Grid
-- Improving Simulation Accuracy
+- Different Simulation Schemes (FVM, etc...) for better simulation accuracy
 - Extending to compressible/Turbulent Models
 
 
@@ -145,6 +149,18 @@ Distributed under the MIT License. See `LICENSE` file for more information.
 * [Kumodatsu](https://github.com/Kumodatsu/template-cpp-premake5/tree/master) For the initial template repo
 * [Jarod42](https://github.com/Jarod42/premake-export-compile-commands/tree/Improvements) For the Improvements branch of export-compile-commands
 * [Best-README](https://github.com/othneildrew/Best-README-Template)
+
+
+<!-- References -->
+## References
+* [Fluid Mechanics 101](https://www.youtube.com/@fluidmechanics101/videos)
+* [GPU Gems 38](https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu)
+* [Stable Fluids - Stam 1999](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/ns.pdf)
+* [Colour Advice](https://www.kennethmoreland.com/color-advice/)
+* [Computational Methods for Fluid Dynamics - Fourth Edition (Ferziger, Perić, L. Street)](https://www.amazon.com/Computational-Methods-Fluid-Dynamics-Ferziger/dp/3319996916)
+* [Online PDF of the Above Book](https://elmoukrie.com/wp-content/uploads/2022/05/joel-h.-ferziger-milovan-peric-robert-l.-street-computational-methods-for-fluid-dynamics-springer-international-publishing-2020.pdf)
+
+
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

@@ -1,6 +1,7 @@
 #include "fluid.hpp"
 #include "vars.hpp"
 #include <util/marker2.hpp>
+#include <util/random.hpp>
 #include <glbinding/gl/gl.h>
 #include <awc2/C/awc2.h>
 #include <immintrin.h>
@@ -19,9 +20,9 @@ static void compute_error(
 static void compute_postprocess();
 
 
-static void invokeCompute();
-static u32 addForces();
-static u32 advect(u32 previousStep);
+static void invokeCompute(gl::MemoryBarrierMask mask = gl::GL_ALL_BARRIER_BITS);
+static u32 addForces(FillType type, u32 interactTexIn);
+static u32 advect(u32 previousStep, bool keepOnlyVelocity, u32 outTex);
 static u32 diffuseVelocity(u32 previousStep);
 static u32 diffusePressure(u32 previousStep);
 static void updateVelocities(u32 newvel, u32 newpressure);
@@ -67,29 +68,76 @@ void fluid::clear()
 }
 
 
+#define TIME_CODE_BLOCK_CUSTOM(enable_gpu_time, counter_cpu, counter_gpu, ...) \
+    if (boolean(enable_gpu_time)) \
+    { \
+        /* No need to mention the GPU-timer overhead on the cpu-side */ \
+        /* but i assume its negligeble */ \
+        \
+        counter_cpu.begin(); \
+        Time::GPUTimer::begin(counter_gpu); \
+        __VA_ARGS__; \
+        Time::GPUTimer::end(counter_gpu); \
+        counter_cpu.end(); \
+    } else { \
+        TIME_NAMESPACE_TIME_CODE_BLOCK(counter_cpu, __VA_ARGS__); \
+    } \
+
+
+
+
 void fluid::update()
 {
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, compute_velocity());
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeDyeTime, compute_dye());
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl_new(gr_nextIterVel));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeErrEstimateTime, compute_error(
-        gr_nextIterVel,
-        gr_prevIterVel
-    ));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderScreenTime, compute_postprocess());
+    TIME_CODE_BLOCK_CUSTOM(
+        g_enableGPUTimers, 
+        g_computeVelTime, 
+        g_computeVelTimeGPU,    
+        compute_velocity()
+    );
+    /* 
+        Make sure to swap textures for updates to propegate to the next iterations
+    */
+    std::swap(gr_prevIterVel, gr_nextIterVel);
+    /* 
+        Subsequent calls to gr_prevIterVel will use the updated field 
+    */
+    TIME_CODE_BLOCK_CUSTOM(
+        g_enableGPUTimers, 
+        g_computeDyeTime, 
+        g_computeDyeTimeGPU,    
+        compute_dye()
+    );
+    TIME_CODE_BLOCK_CUSTOM(
+        g_enableGPUTimers, 
+        g_computeCFLTime, 
+        g_computeCFLTimeGPU,    
+        compute_cfl_new(gr_prevIterVel)
+    );
+    TIME_CODE_BLOCK_CUSTOM(
+        g_enableGPUTimers, 
+        g_computeErrEstimateTime, 
+        g_computeErrTimeGPU,
+        compute_error(gr_nextIterVel, gr_prevIterVel)
+    );
+    TIME_CODE_BLOCK_CUSTOM(g_enableGPUTimers, 
+        g_renderScreenTime, 
+        g_computeScreenTimeGPU, 
+        compute_postprocess()
+    );
     return;
 }
 
 
-void fluid::addSource()
+void fluid::addSourceDefault()
 {
     g_sources.push_back(FluidSource{
-        0,
+        0, 1,
         FillType::FORCE,
-        {0, 0},
-        0.09f,
+        {0},
+        0.01f,
         vec2f{0, 0},
-        vec4f{1.0f}
+        vec4f{0.0f},
+        vec4f{ random32f(), random32f(), random32f(), 1.0f }
     });
     return;
 }
@@ -119,22 +167,23 @@ bool fluid::recompileComputeShaders()
 void compute_velocity() 
 {
     u32 tmp, pressure;
-    tmp = addForces();
-    tmp = advect(tmp);
+    tmp = addForces(FillType::FORCE, gr_prevIterVel);
+    tmp = advect(tmp, true, gr_outTexShader1);
     tmp = diffuseVelocity(tmp);
     pressure = diffusePressure(tmp);
     updateVelocities(tmp, pressure);
-    /* 
-        Make sure to swap textures for updates to propegate to the next iterations
-    */
-    std::swap(gr_prevIterVel, gr_nextIterVel);
     return;
 }
 
 
 static void compute_dye()
 {
+    u32 tmp;
+    tmp = addForces(FillType::DYE, gr_prevIterDye);
+    tmp = advect(tmp, false, gr_nextIterDye);
 
+    std::swap(gr_prevIterDye, gr_nextIterDye);
+    return;
 }
 
 
@@ -323,6 +372,9 @@ void compute_postprocess()
         case DrawTarget::PREESURE:
         texToRender = gr_nextIterVel;
         break;
+        case DrawTarget::CFL_CONTOUR:
+        texToRender = gr_nextIterVel;
+        break;
         default:
         texToRender = DEFAULT32;
         break;
@@ -331,10 +383,12 @@ void compute_postprocess()
     gr_computeRenderToTex.uniform1i("fieldSampler",  0);
     gr_computeRenderToTex.uniform1i("screentexture", 1);
     gr_computeRenderToTex.uniform1ui("ku_selectTextureDraw", __scast(u32, g_chooseTextureToRender));
+    gr_computeRenderToTex.uniform1ui("ku_selectColourMap",   __scast(u32, g_chooseColourMap));
     gr_computeRenderToTex.uniform1f("ku_brightness",         g_textureHighlightSmallValue);
+    gr_computeRenderToTex.uniform1f("ku_dt",                 g_normdt);
+    gr_computeRenderToTex.uniform2fv("ku_colormapMinmax",    g_colorTableMinMax.begin());
     gr_computeRenderToTex.uniform2iv("ku_simdims",           g_dims.begin());
     gr_computeRenderToTex.uniform2fv("ku_simUnitCoord",      &unitCoords[0]);
-
     gl::glBindTextureUnit(0, texToRender);
     gl::glBindImageTexture(1, gr_drawTexture, 0, false, 0, 
         gl::GL_WRITE_ONLY, 
@@ -345,28 +399,27 @@ void compute_postprocess()
 }
 
 
-static void invokeCompute()
+static void invokeCompute(gl::MemoryBarrierMask mask)
 {
     gl::glDispatchCompute(
         g_computeInvocationSize[0], 
         g_computeInvocationSize[1], 
         g_computeInvocationSize[2]
     );
-    gl::glMemoryBarrier(gl::GL_ALL_BARRIER_BITS);
+    gl::glMemoryBarrier(mask);
     return;
 }
 
 
-u32 addForces()
+u32 addForces(FillType type, u32 interactTexIn)
 {
     f32 unitCoords[2]{ g_unitLength, g_unitLength };
     auto winsize = awc2getCurrentContextViewport();
     vec2i winsizei32 = vec2i{__scast(i32, winsize.x), __scast(i32, winsize.y)};
-    u32 interactTexIn  = gr_prevIterVel;
     u32 interactTexOut = gr_outTexShader0;
     bool first = true;
 
-
+    
     gr_computeInteractive.bind();
     gr_computeInteractive.uniform1i("prevFrame", 0);
     gr_computeInteractive.uniform1i("nextFrame", 1);
@@ -377,21 +430,30 @@ u32 addForces()
     gr_computeInteractive.uniform2fv("ku_simUnitCoord",   &unitCoords[0]);
     for(auto& source : g_sources) 
     {
-        if(!source.m_enabled || source.m_type != FillType::FORCE)
+        /* 
+            it might be that we're using force_and_dye, which needs to be processed
+            both by force, and both by dye.
+        */
+        bool extra_cond = source.m_type == FillType::FORCE_AND_DYE
+            && (type == FillType::FORCE || type == FillType::DYE);
+
+
+        if(!source.m_enabled || (source.m_type != type && !extra_cond))
             continue;
 
 
+        vec4f choose_color = type == FillType::FORCE ? source.m_force : source.m_color;
         gr_computeInteractive.uniform2fv("ku_sourcePosition", source.m_position.begin());
-        gr_computeInteractive.uniform4fv("ku_sourceValue",    source.m_color.begin());
+        gr_computeInteractive.uniform4fv("ku_sourceValue",    choose_color.begin());
         gr_computeInteractive.uniform1f("ku_sourceRadius",    source.m_radius);
-        gr_computeInteractive.uniform1ui("ku_mousePressed",   source.m_enabled);
-        gr_computeInteractive.uniform1ui("ku_interactType",   __scast(u32, FillType::FORCE));
+        gr_computeInteractive.uniform1ui("ku_enabled",        source.m_enabled);
+        gr_computeInteractive.uniform1ui("ku_interactType",   __scast(u32, type));
         gl::glBindTextureUnit(0, interactTexIn);
         gl::glBindImageTexture(1, interactTexOut, 0, false, 0, 
             gl::GL_WRITE_ONLY,
             gl::GL_RGBA32F
         );
-        invokeCompute();
+        invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 
         if(first) { 
@@ -410,7 +472,7 @@ u32 addForces()
 }
 
 
-u32 advect(u32 previousStep)
+u32 advect(u32 previousStep, bool keepOnlyVelocity, u32 outTex)
 {
     f32 unitCoords[2]{ g_unitLength, g_unitLength };
 
@@ -418,20 +480,20 @@ u32 advect(u32 previousStep)
     gr_computeAdvection.uniform1i("quantityField", 0);
     gr_computeAdvection.uniform1i("velocityField", 1);
     gr_computeAdvection.uniform1i("outputField",   2);
-    gr_computeAdvection.uniform1ui("ku_writeAllComponents", false);
+    gr_computeAdvection.uniform1ui("ku_writeAllComponents", !keepOnlyVelocity);
     gr_computeAdvection.uniform1f("ku_dt",                  g_normdt);
     gr_computeAdvection.uniform2fv("ku_simUnitCoord",       &unitCoords[0]);
     gr_computeAdvection.uniform2iv("ku_simdims",            g_dims.begin());
     gl::glBindTextureUnit(0, previousStep);
     gl::glBindTextureUnit(1, gr_prevIterVel);
-    gl::glBindImageTexture(2, gr_outTexShader1, 0, false, 0, 
+    gl::glBindImageTexture(2, outTex, 0, false, 0, 
         gl::GL_WRITE_ONLY, 
         gl::GL_RGBA32F
     );
-    invokeCompute();
+    invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 
-    return gr_outTexShader1;
+    return outTex;
 }
 
 
@@ -449,7 +511,7 @@ u32 diffuseVelocity(u32 previousStep)
     gr_computeDiffusionVel.uniform2fv("ku_simUnitCoord", &unitCoords[0]);
     gl::glBindTextureUnit(0, textureInput);
     gl::glBindImageTexture(1, textureOutput, 0, 0, 0, gl::GL_WRITE_ONLY, gl::GL_RGBA32F);
-    invokeCompute();
+    invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 
     i32 i = 0;
@@ -458,7 +520,7 @@ u32 diffuseVelocity(u32 previousStep)
     while(i < g_maximumJacobiIterations) {
         gl::glBindTextureUnit(0, textureInput);
         gl::glBindImageTexture(1, textureOutput, 0, 0, 0, gl::GL_WRITE_ONLY, gl::GL_RGBA32F);
-        invokeCompute();
+        invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         std::swap(textureInput, textureOutput);
         ++i;
@@ -485,7 +547,7 @@ u32 diffusePressure(u32 previousStep)
         gl::GL_WRITE_ONLY, 
         gl::GL_RGBA32F
     );
-    invokeCompute();
+    invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 
     u32 textureInput  = gr_outTexShader3;
@@ -498,7 +560,7 @@ u32 diffusePressure(u32 previousStep)
     gr_computeDiffusionPressure.uniform1f("ku_inverseDensity", 1.0f / g_densityPressure);
     gl::glBindTextureUnit(0, textureInput);
     gl::glBindImageTexture(1, textureOutput, 0, 0, 0, gl::GL_WRITE_ONLY, gl::GL_RGBA32F);
-    invokeCompute();
+    invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 
     i32 i = 0;
@@ -507,7 +569,7 @@ u32 diffusePressure(u32 previousStep)
     while(i < g_maximumJacobiIterations) {
         gl::glBindTextureUnit(0, textureInput);
         gl::glBindImageTexture(1, textureOutput, 0, 0, 0, gl::GL_WRITE_ONLY, gl::GL_RGBA32F);
-        invokeCompute();
+        invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         std::swap(textureInput, textureOutput);
         ++i;
@@ -535,7 +597,7 @@ void updateVelocities(u32 newvel, u32 newpressure)
         gl::GL_WRITE_ONLY, 
         gl::GL_RGBA32F
     );
-    invokeCompute();
+    invokeCompute(gl::GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     return;
 }

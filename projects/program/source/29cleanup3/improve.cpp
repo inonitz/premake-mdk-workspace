@@ -37,9 +37,9 @@ i32 gpugems38_demo_last()
         
         render::clear();
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeFluidTime, fluid::update());
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImguiTime,  render::render_imgui());
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderTime,       render::render());
+            TIME_NAMESPACE_TIME_CODE_BLOCK(g_fluidUpdateTime, fluid::update());
+            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImGuiTime, render::render_imgui());
+            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderBlitTime,  render::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }

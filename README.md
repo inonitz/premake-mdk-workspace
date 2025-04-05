@@ -27,12 +27,12 @@ The following code simulates a 2D Incompressible Fluid using an:
 * System-of-Equations Jacobi Method Solver [Very easy to implement GPGPU]
 * Central Difference for Approximating Calculus Operators [O(x^2) Error]
 
-* **Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)
+* **Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)  
 **[Here](https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)) is a wikipedia article describing the method of solution**
 
 <br>
 
-The currently most-updated revision ```23multigrid/``` features the following:
+The currently most-updated revision ```29cleanup3/``` features the following:
 * Force/Dye/Force-Dye User-Simulation Interaction
 * Vorticity Confinement with variable coefficient
 * Variable Kinematic Viscosity, Delta Time & Poisson-Solver Iterations

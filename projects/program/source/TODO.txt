@@ -3,23 +3,5 @@ A. gpu-gems38
 	2. Improve parallel work
 	3. modify texture formats for better optimization
 	4. combining shaders for less memoryBarrier overheads between compute calls
-	5. Also adding proper dye support
-	6. Maybe 3D?
-
-B. Cross-platform Memory Allocator (will start impl here, will move to separate project later on)
-	1. Windows -
-		.lib: override malloc by rewriting instructions of the function prologue, literally code injection (platform dependant) (also needs a trampoline)
-			--> 
-				* There are differences between x86 & x86-64 prologues
-				* calling conventions between different version of windows (x86, x86_64)
-				* also ARM is an architecture that exists that needs to be accounted for.
-		.dll: already solved on different project 'premake-sandbox' with an IAT function hook, works for literally everything (heapAlloc, virtualAlloc...)
-	2. Linux - 
-		.a - malloc & free are weak symbols on linux, meaning we can easily link to our own functions and the override will work
-		.so - same as above, only that the library of the allocator must be linked first, meaning '-nodefaultlibs -lmemalloc.so,rest_of_the_stdlibs_and_shit'
-			the first symbol (for any stdlib function) found is the symbol that will be used for everything in the program, including other shared libraries (unless they don't use malloc ...) 
-	3. Implement Hooking Interface cross-platform (Also new & delete, malloc & free )
-		[Note]: use [link][https://microsoft.github.io/mimalloc/overrides.html][/link]
-			for list of funcs to override
-C. Catch2 Unit Tests
-D. CI/CD - Github Actions/Gitlab & Docker
+B. Catch2 Unit Tests
+C. CI/CD - Github Actions/Gitlab & Docker

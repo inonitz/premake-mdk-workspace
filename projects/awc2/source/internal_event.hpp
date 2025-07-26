@@ -10,12 +10,12 @@ template<class Func> struct UserFuncIndexer {
 private:
 
     static constexpr u8 isValidFuncTypeIndex = 
-        type_trait::__is_same_type<Func, AWC2::user_callback_window_size >::value * 1 +
-        type_trait::__is_same_type<Func, AWC2::user_callback_keyboard    >::value * 2 +
-        type_trait::__is_same_type<Func, AWC2::user_callback_window_focus>::value * 3 +
-        type_trait::__is_same_type<Func, AWC2::user_callback_mouse_pos   >::value * 4 +
-        type_trait::__is_same_type<Func, AWC2::user_callback_mouse_button>::value * 5 +
-        type_trait::__is_same_type<Func, AWC2::user_callback_mouse_scroll>::value * 6;
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_window_size >::value * 1) +
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_keyboard    >::value * 2) +
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_window_focus>::value * 3) +
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_mouse_pos   >::value * 4) +
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_mouse_button>::value * 5) +
+        ( util2::type_trait::__is_same_type<Func, AWC2::user_callback_mouse_scroll>::value * 6) ;
 
     static_assert(isValidFuncTypeIndex != 0, 
         "Function Type does not match overridable func type"
@@ -62,7 +62,7 @@ inline void user_callback_func_noop(__attribute__((unused)) void* ptr) {
 }
 
 
-} // namespace AWC::internal
+} /* namespace AWC::internal */
 
 
-#endif
+#endif /* __AWC2_INTERNAL_USER_CALLBACK_TABLE_DEFINITION_HEADER__ */

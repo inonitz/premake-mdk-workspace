@@ -1,7 +1,7 @@
 #ifndef __AWC2_INPUT_TYPES_HEADER__
 #define __AWC2_INPUT_TYPES_HEADER__
-#include <util/macro.h>
-#include <util/types.hpp>
+#include <util2/C/macro.h>
+#include <util2/type_trait.hpp>
 
 
 

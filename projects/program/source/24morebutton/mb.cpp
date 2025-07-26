@@ -1,9 +1,9 @@
 #include "mb.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -26,14 +26,14 @@ i32 no_multigrid_for_now_more_buttons()
     while(alive) 
     {
         morebutton24::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(morebutton24::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(morebutton24::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(morebutton24::g_renderTime, morebutton24::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(morebutton24::g_renderTime, morebutton24::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +44,7 @@ i32 no_multigrid_for_now_more_buttons()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(morebutton24::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(morebutton24::g_endFrameTime, awc2end());
         morebutton24::g_frameTime.end();
         ++morebutton24::g_frameCounter;
     }

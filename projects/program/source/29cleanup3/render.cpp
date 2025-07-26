@@ -1,8 +1,8 @@
 #include "render.hpp"
 #include "fluid.hpp"
-#include "util/macro.h"
+#include <util2/C/macro.h>
 #include "vars.hpp"
-#include <util/random.hpp>
+#include <util2/random.hpp>
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -10,7 +10,7 @@
 
 
 using namespace cleanup329;
-using namespace util::math;
+using namespace util2::math;
 
 
 void render::clear()
@@ -259,7 +259,7 @@ Compute Time (GPU) (%s)\n\
     }
     PopStyleCompact();
     // m_mousedxdy = vec4f{ 
-    //     std::sinf(2 * pi<f32> * m_dt * m_frameCounter / m_frameTime.value_units<f32>(1)), 
+    //     sinf(2 * pi<f32> * m_dt * m_frameCounter / m_frameTime.value_units<f32>(1)), 
     //     1.0f, 
     //     0.0f, 0.0f
     // };
@@ -339,7 +339,7 @@ Dynamic: Change Position Using the Mouse\n"
             0.01f,
             vec2f{0, 0},
             vec4f{0.0f},
-            vec4f{ random32f(), random32f(), random32f(), 1.0f }
+            vec4f{ util2::random32f(), util2::random32f(), util2::random32f(), 1.0f }
         };
         switch(selected_source) {
             case DEFAULT32:
@@ -462,14 +462,14 @@ Dynamic: Change Position Using the Mouse\n"
                 if(source.m_type == FillType::FORCE_AND_DYE) {
                     ImGui::PushID("ColorButtonForceInput");
                     if(ImGui::ColorButton("", *__rcast(ImVec4*, &source.m_force))) {
-                        source.m_force = vec4f{ random32f(), random32f(), 0.0f, 1.0f };
+                        source.m_force = vec4f{ util2::random32f(), util2::random32f(), 0.0f, 1.0f };
                         g_mostRecentSource = n;
                     }
                     ImGui::PopID(); 
                     ImGui::SameLine();
                 }
                 if(ImGui::ColorButton("", *__rcast(ImVec4*, &source.m_color))) {
-                    source.m_color = vec4f{ random32f(), random32f(), random32f(), 1.0f };
+                    source.m_color = vec4f{ util2::random32f(), util2::random32f(), util2::random32f(), 1.0f };
                     g_mostRecentSource = n;
                 }
                 ImGui::PopID(); 

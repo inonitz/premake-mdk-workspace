@@ -1,6 +1,6 @@
 #pragma once
-#include <util/time.hpp>
-#include <util/vec2.hpp>
+#include <util2/time.hpp>
+#include <util2/vec2.hpp>
 #include <glbinding/gl46core/gl.h>
 #include "gl/shader2.hpp"
 
@@ -8,7 +8,7 @@
 namespace boundary21 {
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 extern const char* computeShaderFilename[8];
@@ -24,18 +24,18 @@ extern i64                g_maxFrameTimeNs;
 extern i64                g_avgFrameTimeNs;
 extern const i64          g_slowRenderDurationNs;
 extern i64                g_waitTime;
-extern Time::Timestamp    g_frameTime;
-extern Time::Timestamp    g_renderTime;
-extern Time::Timestamp    g_beginFrameTime;
-extern Time::Timestamp    g_endFrameTime;
-extern Time::Timestamp    g_computeFluidTime;
-extern Time::Timestamp    g_computeVelTime;
-extern Time::Timestamp    g_computeDyeTime;
-extern Time::Timestamp    g_computeCFLTime;
-extern Time::Timestamp    g_computeMaximumCPU;
-extern Time::Timestamp    g_computeMaximumGPU;
-extern Time::Timestamp    g_renderImguiTime;
-extern Time::Timestamp    g_renderScreenTime;
+extern util2::Time::Timestamp    g_frameTime;
+extern util2::Time::Timestamp    g_renderTime;
+extern util2::Time::Timestamp    g_beginFrameTime;
+extern util2::Time::Timestamp    g_endFrameTime;
+extern util2::Time::Timestamp    g_computeFluidTime;
+extern util2::Time::Timestamp    g_computeVelTime;
+extern util2::Time::Timestamp    g_computeDyeTime;
+extern util2::Time::Timestamp    g_computeCFLTime;
+extern util2::Time::Timestamp    g_computeMaximumCPU;
+extern util2::Time::Timestamp    g_computeMaximumGPU;
+extern util2::Time::Timestamp    g_renderImguiTime;
+extern util2::Time::Timestamp    g_renderScreenTime;
 
 
 /* Simulation Constants */

@@ -1,12 +1,12 @@
 #pragma once
-#include <util/base_type.h>
-#include <util/time.hpp>
+#include <util2/C/base_type.h>
+#include <util2/time.hpp>
 
 
 namespace program {
 
 u8               getContextID();
-Time::Timestamp& getFrameTime();
+util2::Time::Timestamp& getFrameTime();
 bool             getSlowRenderFlag();
 void initializeLibrary();
 void destroyLibrary();

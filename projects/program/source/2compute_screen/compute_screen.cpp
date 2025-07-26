@@ -1,15 +1,15 @@
 #include "compute_screen.hpp"
 #include <threads.h>
 #include <glbinding/gl/gl.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "awc2/C/context.h"
 #include "gl/shader2.hpp"
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)

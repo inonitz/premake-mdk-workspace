@@ -2,10 +2,10 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
 #include "gl/shader2.hpp"
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 #if defined __linux__
@@ -25,9 +25,9 @@
         "C:/CTools/Projects/main/projects/program/source/9forces_advection_diffusion/4draw.comp"
     };
 #endif
-using namespace util::math;
+using namespace util2::math;
 static u8                 g_contextid;
-static Time::Timestamp    g_frameTime;   
+static util2::Time::Timestamp    g_frameTime;   
 static std::vector<vec4f> g_initialField;
 static vec2i              g_dims{1024, 1024};
 static f32                g_dt        = 0.01f;
@@ -72,7 +72,7 @@ static void compute_dye();
 
 
 u8               program0::getContextID() { return g_contextid; }
-Time::Timestamp& program0::getFrameTime() { return g_frameTime; }
+util2::Time::Timestamp& program0::getFrameTime() { return g_frameTime; }
 
 
 void program0::initializeLibrary()

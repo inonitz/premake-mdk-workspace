@@ -1,6 +1,6 @@
 #ifndef __AWC2_INTERNAL_DEFAULT_CALLBACK_DEFINITION_HEADER__
 #define __AWC2_INTERNAL_DEFAULT_CALLBACK_DEFINITION_HEADER__
-#include <util/macro.h>
+#include <util2/C/macro.h>
 
 
 typedef struct GLFWwindow GLFWwindow;

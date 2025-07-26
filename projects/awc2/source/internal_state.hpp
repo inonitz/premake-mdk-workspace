@@ -4,8 +4,8 @@
 #include "internal_event.hpp"
 #include "internal_window.hpp"
 #include "internal_input.hpp"
-#include <util/pool.hpp>
-#include <util/bufferptr.hpp>
+#include <util2/pool.hpp>
+#include <util2/bufferptr.hpp>
 
 
 namespace AWC2::internal {
@@ -52,7 +52,7 @@ struct alignsz(32) AWC2ContextData
 
 // struct AWC2Data
 // {
-//     util::BufferPointer<AWC2ContextData> poolmem;
+//     util2::BufferPointer<AWC2ContextData> poolmem;
 //     u8    activeid = DEFAULT8;
 //     bool  init     = false;
 //     u8    reserved[6]{0};
@@ -64,9 +64,12 @@ struct alignsz(32) AWC2ContextData
 
 
 struct AWC2Data {
-    Pool<sizeof(AWC2ContextData), true>  ctxpool;
-    util::BufferPointer<AWC2ContextData> poolmem;
-    AWC2::ContextBitmap                  ctxmap;
+    using nonOwningDataPool = util2::Pool<sizeof(AWC2ContextData), true>;
+    using owningBufferPtr   = util2::BufferPointer<AWC2ContextData>;
+ 
+    nonOwningDataPool ctxpool;
+    owningBufferPtr   poolmem;
+    AWC2::ContextBitmap ctxmap;
 };
 
 

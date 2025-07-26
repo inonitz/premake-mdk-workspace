@@ -1,6 +1,6 @@
 #ifndef __OPENGL_OBJECTS_TIMER__
 #define __OPENGL_OBJECTS_TIMER__
-#include <util/base_type.h>
+#include <util2/C/base_type.h>
 
 
 /* Implemented with help from https://www.lighthouse3d.com/tutorials/opengl-timer-query/ */
@@ -27,7 +27,7 @@ private:
 };
 
 
-} /* namespace Timer */
+} /* namespace Time */
 
 
 #endif

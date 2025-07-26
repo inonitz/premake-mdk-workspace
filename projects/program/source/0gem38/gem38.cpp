@@ -1,18 +1,18 @@
 #include "gem38.hpp"
 #include <threads.h>
 #include <glbinding/gl/gl.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
+#include <util2/random.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "gl/shader2.hpp"
 #include "glbinding/gl/bitfield.h"
 #include "glbinding/gl/enum.h"
 #include "glbinding/gl/functions.h"
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 static inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -61,8 +61,8 @@ static void initializeExternForces(vec2u const& dims, std::vector<vec4f>& field)
             //     0.0f, 1.0f
             // };
             field[i + j * dims.x] = vec4f{0.0f, dimsf.y, 0.0f, 0.0f}; /* simulating gravity for a sec */
-            // if(random32f() > 0.7f)
-                // field[i + j * dims.x] = vec4f{ random32f() * dimsf.x, random32f() * dimsf.y, 0.0f, 0.0f };
+            // if(util2::random32f() > 0.7f)
+                // field[i + j * dims.x] = vec4f{ util2::random32f() * dimsf.x, util2::random32f() * dimsf.y, 0.0f, 0.0f };
         }
     }
     mark();

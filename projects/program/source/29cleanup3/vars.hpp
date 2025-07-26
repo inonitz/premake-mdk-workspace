@@ -1,6 +1,6 @@
 #pragma once
-#include <util/time.hpp>
-#include <util/vec2.hpp>
+#include <util2/time.hpp>
+#include <util2/vec2.hpp>
 #include <glbinding/gl/types.h>
 #include "gl/shader2.hpp"
 #include "gl/gltimer.hpp"
@@ -9,7 +9,7 @@
 namespace cleanup329 {
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 enum class FillType : u8 {
@@ -84,24 +84,24 @@ extern i64                g_maxFrameTimeNs;
 extern i64                g_avgFrameTimeNs;
 extern const i64          g_slowRenderDurationNs;
 extern i64                g_waitTime;
-extern Time::Timestamp    g_cpuTimerBuffer[16];
+extern util2::Time::Timestamp    g_cpuTimerBuffer[16];
 extern Time::GPUTimer     g_gpuTimerBuffer[5];
 
-extern Time::Timestamp&   g_frameTime             ;
-extern Time::Timestamp&   g_beginFrameTime        ;
-extern Time::Timestamp&   g_fluidUpdateTime       ;
-extern Time::Timestamp&   g_computeVelTime        ;
-extern Time::Timestamp&   g_computeDyeTime        ;
-extern Time::Timestamp&   g_computeCFLTime        ;
-extern Time::Timestamp&   g_computeErrEstimateTime;
-extern Time::Timestamp&   g_renderScreenTime      ;
-extern Time::Timestamp&   g_renderImGuiTime       ;
-extern Time::Timestamp&   g_renderBlitTime        ;
-extern Time::Timestamp&   g_endFrameTime          ;
-extern Time::Timestamp&   g_computeMaximumCPU     ;
-extern Time::Timestamp&   g_computeMaximumGPU     ;
-extern Time::Timestamp&   g_computeErrorGPU       ;
-extern Time::Timestamp&   g_computeErrorCPU       ;
+extern util2::Time::Timestamp&   g_frameTime             ;
+extern util2::Time::Timestamp&   g_beginFrameTime        ;
+extern util2::Time::Timestamp&   g_fluidUpdateTime       ;
+extern util2::Time::Timestamp&   g_computeVelTime        ;
+extern util2::Time::Timestamp&   g_computeDyeTime        ;
+extern util2::Time::Timestamp&   g_computeCFLTime        ;
+extern util2::Time::Timestamp&   g_computeErrEstimateTime;
+extern util2::Time::Timestamp&   g_renderScreenTime      ;
+extern util2::Time::Timestamp&   g_renderImGuiTime       ;
+extern util2::Time::Timestamp&   g_renderBlitTime        ;
+extern util2::Time::Timestamp&   g_endFrameTime          ;
+extern util2::Time::Timestamp&   g_computeMaximumCPU     ;
+extern util2::Time::Timestamp&   g_computeMaximumGPU     ;
+extern util2::Time::Timestamp&   g_computeErrorGPU       ;
+extern util2::Time::Timestamp&   g_computeErrorCPU       ;
 extern Time::GPUTimer&    g_computeVelTimeGPU     ;
 extern Time::GPUTimer&    g_computeDyeTimeGPU     ;
 extern Time::GPUTimer&    g_computeCFLTimeGPU     ;

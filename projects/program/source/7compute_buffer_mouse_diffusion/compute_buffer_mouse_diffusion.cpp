@@ -2,19 +2,14 @@
 #include <threads.h>
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
+#include <util2/random.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include "awc2/C/input.h"
 #include "gl/shader2.hpp"
-#include "glbinding/gl/enum.h"
-#include "glbinding/gl/functions.h"
-#include "util/macro.h"
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 static inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -37,7 +32,7 @@ static inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_str
 //     mark();
 //     field.resize(dims.x * dims.y);
 //     for(u64 i = 0; i < field.size(); ++i) {
-//         f32 rand = random32f();
+//         f32 rand = util2::random32f();
 //         field[i] = vec4f{
 //             0.0f, 0.0f, rand, 1.0f
 //         };

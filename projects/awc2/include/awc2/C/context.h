@@ -1,8 +1,8 @@
 #ifndef __AWC2_C_CONTEXT_INTERFACE_HEADER__
 #define __AWC2_C_CONTEXT_INTERFACE_HEADER__
-#include <util/macro.h>
-#include <util/static_assert.h>
-#include <util/base_type.h>
+#include <util2/C/macro.h>
+#include <util2/C/static_assert.h>
+#include <util2/C/base_type.h>
 
 
 #ifdef __cplusplus
@@ -53,7 +53,7 @@ typedef struct alignsz(8) __awc2_WindowDescriptorStructure
     AWC2WindowCreationFlag createFlags;
     AWC2WindowStateFlag    stateFlags;
 } AWC2WindowDescriptor;
-UTIL_STATIC_ASSERT(sizeof(AWC2WindowDescriptor) == 8, WindowDescriptor, "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2WindowDescriptor) == 8, WindowDescriptor, "Conforming Size Types Across Compilers")
 
 
 __force_inline inline u64 awc2WindowDescriptorAsU64(AWC2WindowDescriptor* wdesc) {
@@ -94,10 +94,10 @@ typedef struct alignsz(16) __awc2_ContextDescriptorStructure
 } AWC2ContextDescriptor;
 
 
-UTIL_STATIC_ASSERT(sizeof(AWC2ContextID)          == 1,  AWC2ContextID,          "Conforming Size Types Across Compilers")
-UTIL_STATIC_ASSERT(sizeof(AWC2ContextVector)      == 40, AWC2ContextVector,      "Conforming Size Types Across Compilers")
-UTIL_STATIC_ASSERT(sizeof(AWC2ViewportSize)       == 8,  AWC2ViewportSize,       "Conforming Size Types Across Compilers")
-UTIL_STATIC_ASSERT(sizeof(AWC2ContextDescriptor)  == 16, AWC2ContextDescriptor,  "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2ContextID)          == 1,  AWC2ContextID,          "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2ContextVector)      == 40, AWC2ContextVector,      "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2ViewportSize)       == 8,  AWC2ViewportSize,       "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2ContextDescriptor)  == 16, AWC2ContextDescriptor,  "Conforming Size Types Across Compilers")
 
 
 #ifdef __cplusplus

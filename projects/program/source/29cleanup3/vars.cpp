@@ -1,8 +1,8 @@
 #include "vars.hpp"
-#include "util/time.hpp"
+#include <util2/time.hpp>
 #include <glbinding/gl/gl.h>
-#include <util/aligned_malloc.hpp>
-#include <util/marker2.hpp>
+#include <util2/aligned_malloc.hpp>
+#include <util2/C/marker4.h>
 #include <awc2/C/awc2.h>
 
 
@@ -33,23 +33,23 @@ i64                g_maxFrameTimeNs{0};
 i64                g_avgFrameTimeNs{0};
 const i64          g_slowRenderDurationNs{50 * 1'000'000'000ll};
 i64                g_waitTime{};
-Time::Timestamp    g_cpuTimerBuffer[16]{};
+util2::Time::Timestamp    g_cpuTimerBuffer[16]{};
 Time::GPUTimer     g_gpuTimerBuffer[5]{};
-Time::Timestamp&   g_frameTime              = g_cpuTimerBuffer[0];
-Time::Timestamp&   g_beginFrameTime         = g_cpuTimerBuffer[1];
-Time::Timestamp&   g_fluidUpdateTime        = g_cpuTimerBuffer[2];
-Time::Timestamp&   g_computeVelTime         = g_cpuTimerBuffer[3];
-Time::Timestamp&   g_computeDyeTime         = g_cpuTimerBuffer[4];
-Time::Timestamp&   g_computeCFLTime         = g_cpuTimerBuffer[5];
-Time::Timestamp&   g_computeErrEstimateTime = g_cpuTimerBuffer[6];
-Time::Timestamp&   g_renderScreenTime       = g_cpuTimerBuffer[7];
-Time::Timestamp&   g_renderImGuiTime        = g_cpuTimerBuffer[8];
-Time::Timestamp&   g_renderBlitTime         = g_cpuTimerBuffer[9];
-Time::Timestamp&   g_endFrameTime           = g_cpuTimerBuffer[10];
-Time::Timestamp&   g_computeMaximumCPU      = g_cpuTimerBuffer[11];
-Time::Timestamp&   g_computeMaximumGPU      = g_cpuTimerBuffer[12];
-Time::Timestamp&   g_computeErrorGPU        = g_cpuTimerBuffer[13];
-Time::Timestamp&   g_computeErrorCPU        = g_cpuTimerBuffer[14];
+util2::Time::Timestamp&   g_frameTime              = g_cpuTimerBuffer[0];
+util2::Time::Timestamp&   g_beginFrameTime         = g_cpuTimerBuffer[1];
+util2::Time::Timestamp&   g_fluidUpdateTime        = g_cpuTimerBuffer[2];
+util2::Time::Timestamp&   g_computeVelTime         = g_cpuTimerBuffer[3];
+util2::Time::Timestamp&   g_computeDyeTime         = g_cpuTimerBuffer[4];
+util2::Time::Timestamp&   g_computeCFLTime         = g_cpuTimerBuffer[5];
+util2::Time::Timestamp&   g_computeErrEstimateTime = g_cpuTimerBuffer[6];
+util2::Time::Timestamp&   g_renderScreenTime       = g_cpuTimerBuffer[7];
+util2::Time::Timestamp&   g_renderImGuiTime        = g_cpuTimerBuffer[8];
+util2::Time::Timestamp&   g_renderBlitTime         = g_cpuTimerBuffer[9];
+util2::Time::Timestamp&   g_endFrameTime           = g_cpuTimerBuffer[10];
+util2::Time::Timestamp&   g_computeMaximumCPU      = g_cpuTimerBuffer[11];
+util2::Time::Timestamp&   g_computeMaximumGPU      = g_cpuTimerBuffer[12];
+util2::Time::Timestamp&   g_computeErrorGPU        = g_cpuTimerBuffer[13];
+util2::Time::Timestamp&   g_computeErrorCPU        = g_cpuTimerBuffer[14];
 Time::GPUTimer&    g_computeVelTimeGPU    = g_gpuTimerBuffer[0];
 Time::GPUTimer&    g_computeDyeTimeGPU    = g_gpuTimerBuffer[1];
 Time::GPUTimer&    g_computeCFLTimeGPU    = g_gpuTimerBuffer[2];

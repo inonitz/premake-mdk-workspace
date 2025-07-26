@@ -1,6 +1,6 @@
 #pragma once
-#include <util/time.hpp>
-#include <util/vec2.hpp>
+#include <util2/time.hpp>
+#include <util2/vec2.hpp>
 #include <glbinding/gl46core/gl.h>
 #include "gl/shader2.hpp"
 
@@ -8,30 +8,30 @@
 namespace features18 {
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 extern const char* computeShaderFilename[8];
 extern u8                 g_measureTimeOnce;
 extern u8                 g_runCodeOnceFlag;
 extern u8                 g_contextid;
-extern Time::Timestamp    g_frameTime;
-extern Time::Timestamp    g_measuremisc[3];
-extern Time::Timestamp    g_renderTime;
+extern util2::Time::Timestamp    g_frameTime;
+extern util2::Time::Timestamp    g_measuremisc[3];
+extern util2::Time::Timestamp    g_renderTime;
 extern i64                g_minFrameTimeNs;
 extern i64                g_maxFrameTimeNs;
 extern i64                g_avgFrameTimeNs;
 extern i64                g_slowRenderWaitDurationNs;
 extern i64                g_waitTime;
-extern Time::Timestamp    g_computeDyeTime;
-extern Time::Timestamp    g_computeVelTime;
-extern Time::Timestamp    g_computeCFLTime;
-extern Time::Timestamp    g_computeFluidTime;
-extern Time::Timestamp    g_computeMaximumCPU;
-extern Time::Timestamp    g_computeMaximumGPU;
-extern Time::Timestamp    g_renderImguiTime;
-extern Time::Timestamp    g_renderScreenTime;
-extern Time::Timestamp    g_refreshShaderTime;
+extern util2::Time::Timestamp    g_computeDyeTime;
+extern util2::Time::Timestamp    g_computeVelTime;
+extern util2::Time::Timestamp    g_computeCFLTime;
+extern util2::Time::Timestamp    g_computeFluidTime;
+extern util2::Time::Timestamp    g_computeMaximumCPU;
+extern util2::Time::Timestamp    g_computeMaximumGPU;
+extern util2::Time::Timestamp    g_renderImguiTime;
+extern util2::Time::Timestamp    g_renderScreenTime;
+extern util2::Time::Timestamp    g_refreshShaderTime;
 
 
 extern std::vector<vec4f> g_initialField;
@@ -115,11 +115,11 @@ extern void* g_reductionMaxMappedBuf;
 inline u8               getContextID()      { return g_contextid;      }
 inline u64              getAvgFrameTimeNs() { return g_avgFrameTimeNs; }
 inline u32&             getFrameCounter()   { return g_frameCounter;   }
-inline Time::Timestamp& getFrameTime()      { return g_frameTime;      }
-inline Time::Timestamp& getRenderTime()     { return g_renderTime;     }
-inline Time::Timestamp& getTimer0()         { return g_measuremisc[0]; }
-inline Time::Timestamp& getTimer1()         { return g_measuremisc[1]; }
-inline Time::Timestamp& getTimer2()         { return g_measuremisc[2]; }
+inline util2::Time::Timestamp& getFrameTime()      { return g_frameTime;      }
+inline util2::Time::Timestamp& getRenderTime()     { return g_renderTime;     }
+inline util2::Time::Timestamp& getTimer0()         { return g_measuremisc[0]; }
+inline util2::Time::Timestamp& getTimer1()         { return g_measuremisc[1]; }
+inline util2::Time::Timestamp& getTimer2()         { return g_measuremisc[2]; }
 
 
 void initializeLibrary();

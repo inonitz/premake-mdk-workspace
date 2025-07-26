@@ -1,9 +1,9 @@
 #include "simple_window.hpp"
 #include <threads.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -22,7 +22,7 @@ inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct con
 }
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 i32 simple_window()

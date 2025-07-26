@@ -1,6 +1,6 @@
 #include "vars.hpp"
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 
@@ -22,21 +22,21 @@ const char* computeShaderFilename[9] = {
 
 u8                 g_runCodeOnceFlag{true};
 u8                 g_contextid;
-Time::Timestamp    g_frameTime{};
-Time::Timestamp    g_measuremisc0;
-Time::Timestamp    g_measuremisc1;
-Time::Timestamp    g_renderTime{};
+util2::Time::Timestamp    g_frameTime{};
+util2::Time::Timestamp    g_measuremisc0;
+util2::Time::Timestamp    g_measuremisc1;
+util2::Time::Timestamp    g_renderTime{};
 f32                g_minRenderTime{1000};
 f32                g_maxRenderTime{0};
 f32                g_avgRenderTime{0};
-Time::Timestamp    g_computeVelTime{};
-Time::Timestamp    g_computeCFLTime{};
-Time::Timestamp    g_computeFluidTime{};
-Time::Timestamp    g_retrieveTextureData{};
-Time::Timestamp    g_computeMaximum{};
-Time::Timestamp    g_renderImguiTime;
-Time::Timestamp    g_renderScreenTime;
-Time::Timestamp    g_refreshShaderTime;
+util2::Time::Timestamp    g_computeVelTime{};
+util2::Time::Timestamp    g_computeCFLTime{};
+util2::Time::Timestamp    g_computeFluidTime{};
+util2::Time::Timestamp    g_retrieveTextureData{};
+util2::Time::Timestamp    g_computeMaximum{};
+util2::Time::Timestamp    g_renderImguiTime;
+util2::Time::Timestamp    g_renderScreenTime;
+util2::Time::Timestamp    g_refreshShaderTime;
 
 
 std::vector<vec4f> g_initialField;

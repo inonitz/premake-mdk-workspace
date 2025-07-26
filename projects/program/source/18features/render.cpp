@@ -1,8 +1,8 @@
 #include "render.hpp"
-#include <util/random.hpp>
+#include <util2/random.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "backend18.hpp"
 #include <imgui/imgui.h>
@@ -27,7 +27,7 @@ void features18::render()
     );
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
 
     /* literally just the velocity texture on the screen */
     if(g_slowRender) {
@@ -58,7 +58,7 @@ void features18::render()
 
 
     u32 texToRender = 0;
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
     g_renderScreenTime.begin();
     gr_computeRenderToTex.bind();
     gr_computeRenderToTex.uniform1i("fieldSampler", 0);
@@ -130,8 +130,8 @@ static void render_imgui_interface()
     }
     if(awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT)) {
         if(g_runCodeOnceFlag) {
-            g_splatterForce = vec4f{ random32f(), random32f(), 0.0f,        1.0f };
-            g_splatterColor = vec4f{ random32f(), random32f(), random32f(), 1.0f };
+            g_splatterForce = vec4f{ util2::random32f(), util2::random32f(), 0.0f,        1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), util2::random32f(), 1.0f };
             g_runCodeOnceFlag = false;
         }
     }

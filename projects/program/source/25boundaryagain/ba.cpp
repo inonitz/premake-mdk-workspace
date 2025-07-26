@@ -1,11 +1,11 @@
 #include "ba.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 i32 no_multigrid_for_now_until_internal_boundary_works()
@@ -26,14 +26,14 @@ i32 no_multigrid_for_now_until_internal_boundary_works()
     while(alive) 
     {
         makebelievebound25::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(makebelievebound25::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(makebelievebound25::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(makebelievebound25::g_renderTime, makebelievebound25::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(makebelievebound25::g_renderTime, makebelievebound25::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +44,7 @@ i32 no_multigrid_for_now_until_internal_boundary_works()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(makebelievebound25::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(makebelievebound25::g_endFrameTime, awc2end());
         makebelievebound25::g_frameTime.end();
         ++makebelievebound25::g_frameCounter;
     }

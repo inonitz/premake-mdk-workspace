@@ -1,9 +1,9 @@
 #include "mg.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -26,14 +26,14 @@ i32 multigrid_method_also_no_internal_boundaries_for_now()
     while(alive) 
     {
         multigrid23::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(multigrid23::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(multigrid23::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(multigrid23::g_renderTime, multigrid23::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(multigrid23::g_renderTime, multigrid23::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +44,7 @@ i32 multigrid_method_also_no_internal_boundaries_for_now()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(multigrid23::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(multigrid23::g_endFrameTime, awc2end());
         multigrid23::g_frameTime.end();
         ++multigrid23::g_frameCounter;
     }

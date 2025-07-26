@@ -1,16 +1,14 @@
 #include "advection_boundary.hpp"
-#include <threads.h>
-#include <glbinding/gl/gl.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
-#include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
 #include "gl/shader2.hpp"
-#include "glbinding/gl/enum.h"
+#include <awc2/C/awc2.h>
+#include <glbinding/gl/gl.h>
+#include <threads.h>
+#include <util2/C/marker4.h>
+#include <util2/random.hpp>
+#include <util2/vec2.hpp>
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 static inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -43,8 +41,8 @@ static inline void initializeVectorFields(vec2u const& dims, std::vector<vec4f>&
             //     0.0f, 1.0f
             // };
             field[i + j * dims.x] = vec4f{ 
-                random32f(),
-                random32f(),
+                util2::random32f(),
+                util2::random32f(),
                 0.0f,
                 1.0f
             };

@@ -1,5 +1,5 @@
 #include "framebuffer.hpp"
-#include <util/ifcrash.hpp>
+#include <util2/C/ifcrash2.h>
 #include <glbinding/gl/gl.h>
 
 
@@ -93,7 +93,7 @@ void Framebuffer::create(fboType target)
 
 
 void Framebuffer::destroy() {
-	ifcrashstr_debug(id == 0, "Framebuffer::destroy() => Can't Destroy OpenGL Framebuffer Object that hasn't been created\n"); 
+	ifcrashstr(id == 0, "Framebuffer::destroy() => Can't Destroy OpenGL Framebuffer Object that hasn't been created\n"); 
 	glDeleteFramebuffers(1, &id);
 }
 

@@ -4,14 +4,116 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        // Windows Debug
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Launch",
+            "name": "LLDB (Windows-x86_64-Static-Debug)",
             "program": "${workspaceFolder}\\build\\bin\\DebugLib_amd64_program\\program.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "stopOnEntry": true
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Windows-x86_64-Dll-Debug)",
+            "program": "${workspaceFolder}\\build\\bin\\DebugDll_amd64\\program.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+        // Windows RelWithDbgInfo
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Windows-x86_64-Static-RelWithDbgInfo)",
+            "program": "${workspaceFolder}\\build\\bin\\RelWithDbgInfoLib_amd64_program\\program.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Windows-x86_64-Dll-RelWithDbgInfo)",
+            "program": "${workspaceFolder}\\build\\bin\\RelWithDbgInfoDll_amd64\\program.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+
+        
+        // Linux Debug
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Linux-x86_64-Static-Debug)",
+            "program": "${workspaceFolder}/build/bin/DebugLib_amd64_program/program",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Linux-x86_64-Shared-Debug)",
+            "program": "${workspaceFolder}/build/bin/DebugDll_amd64/program_new",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+
+        // Linux RelWithDbgInfo
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Linux-x86_64-Static-RelWithDbgInfo)",
+            "program": "${workspaceFolder}/build/bin/RelWithDbgInfoLib_amd64_program/program",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB (Linux-x86_64-Shared-RelWithDbgInfo)",
+            "program": "${workspaceFolder}/build/bin/RelWithDbgInfoDll_amd64/program",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "initCommands": [
+                "settings set target.process.follow-fork-mode child",
+                // "breakpoint set --name main"
+            ]
         },
     ]
 }

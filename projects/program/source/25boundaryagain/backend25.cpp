@@ -1,6 +1,6 @@
 #include "backend25.hpp"
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <immintrin.h>
 #include "vars.hpp"
 
@@ -83,7 +83,7 @@ u32 makebelievebound25::compute_fluid()
     }
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, 
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeVelTime, 
         compute_velocity(
             previousIterationVel, 
             nextIterationVel,
@@ -91,7 +91,7 @@ u32 makebelievebound25::compute_fluid()
             nextIterationBnd
         )
     );
-    // TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeDyeTime, 
+    // UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeDyeTime, 
     //     compute_dye(
     //         g_chooseUserDrawFillType == USER_DRAW_FILL_TYPE_BOUNDARY ? nextIterationBnd : previousIterationBnd,
     //         nextIterationVel, 
@@ -100,8 +100,8 @@ u32 makebelievebound25::compute_fluid()
     //     )
     // );
 
-    // TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl_new(nextIterationVel));
-    // TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeErrEstimateTime, compute_error(
+    // UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeCFLTime, compute_cfl_new(nextIterationVel));
+    // UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeErrEstimateTime, compute_error(
     //     previousIterationVel,
     //     nextIterationVel,
     //     gr_outTexShader9
@@ -552,7 +552,7 @@ static void compute_error(
 
 
     g_computeErrorCPU.begin();
-    util::__memcpy(&g_prevErrorValues[0], &g_currErrorValues[0], 3);
+    util2::memcpy(&g_prevErrorValues[0], &g_currErrorValues[0], 3);
     g_currErrorValues[0] = vec4f{1000};
     g_currErrorValues[1] = vec4f{0.0f};
     g_currErrorValues[2] = vec4f{0.0f};
@@ -560,7 +560,7 @@ static void compute_error(
     auto* mappedptr = __rcast(vec4f*, g_reductionErrMappedBuf);
     vec4f local_minmaxavg[3];
     for(i32 i = 0; i < g_reductionBufferLength; ++i) {
-        util::__memcpy(&local_minmaxavg[0], &mappedptr[3 * i], 3);
+        util2::memcpy(&local_minmaxavg[0], &mappedptr[3 * i], 3);
 
         g_currErrorValues[0] = compareLessThanXY_M128(
             local_minmaxavg[0].xmm, 

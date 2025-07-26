@@ -1,9 +1,8 @@
 #include "render.hpp"
-#include <util/random.hpp>
-#include <util/marker2.hpp>
+#include <util2/random.hpp>
+#include <util2/C/marker4.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "backend24.hpp"
 #include <imgui/imgui.h>
@@ -29,7 +28,7 @@ void morebutton24::render()
     );
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImguiTime, render_imgui_interface_new());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderImguiTime, render_imgui_interface_new());
 
     /* literally just the velocity texture on the screen */
     // if(g_slowRender) {
@@ -60,7 +59,7 @@ void morebutton24::render()
 
 
     u32 texToRender = 0;
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
     g_renderScreenTime.begin();
     gr_computeRenderToTex.bind();
     gr_computeRenderToTex.uniform1i("fieldSampler", 0);
@@ -338,14 +337,14 @@ Compute Time\n\
     }
     if(g_mousePressRight) {
         if(g_runCodeOnce[0]) {
-            g_splatterColor = vec4f{ random32f(), random32f(), random32f(), 1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), util2::random32f(), 1.0f };
             g_runCodeOnce[0] = true;
         }
     }
     g_runCodeOnce[0] = awc2isMouseButtonReleased(AWC2_MOUSEBUTTON_RIGHT);
     if(g_mouseLockInPlace) {
         g_mousedxdy = vec4f{ 
-            std::sinf(2 * pi<f32> * g_dt * g_frameCounter / g_frameTime.value_units<f32>(1)), 
+            sinf(2 * pi<f32> * g_dt * g_frameCounter / g_frameTime.value_units<f32>(1)), 
             1.0f, 
             0.0f, 0.0f
         };
@@ -376,7 +375,7 @@ Compute Time\n\
         g_windowSize.x, g_windowSize.y, g_dims.x, g_dims.y, 
         g_mousePress, g_mousedxdy.x, g_mousedxdy.y,
         g_normdt, g_cfl, g_maxVelocity.x, g_maxVelocity.y,
-        util::math::dot(g_maxVelocity, g_simUnitCoords) / g_kinematicViscosity,
+        util2::math::dot(g_maxVelocity, g_simUnitCoords) / g_kinematicViscosity,
 
         g_currErrorValues[0].x, g_currErrorValues[0].y, g_currErrorValues[0].z, g_currErrorValues[0].w,
         g_currErrorValues[1].x, g_currErrorValues[1].y, g_currErrorValues[1].z, g_currErrorValues[1].w,

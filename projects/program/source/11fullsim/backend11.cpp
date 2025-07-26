@@ -2,12 +2,12 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <threads.h>
-#include <util/vec2.hpp>
-#include <util/marker2.hpp>
-#include <util/random.hpp>
-#include <util/time.hpp>
+#include <util2/vec2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/random.hpp>
+#include <util2/time.hpp>
 #include "gl/shader2.hpp"
 
 
@@ -24,10 +24,10 @@ static constexpr const char* computeShaderFilename[9] = {
     "projects/program/source/11fullsim/7draw.comp",
     "projects/program/source/11fullsim/parallelReduction.comp"
 };
-using namespace util::math;
+using namespace util2::math;
 static u8                 g_runCodeOnceFlag{true};
 static u8                 g_contextid;
-static Time::Timestamp    g_frameTime;
+static util2::Time::Timestamp    g_frameTime;
 static std::vector<vec4f> g_initialField;
 static vec2i              g_dims{1024, 576};
 static vec2i              g_windims{g_dims};
@@ -96,7 +96,7 @@ static void compute_cfl(u32 texture);
 
 
 u8               program2::getContextID() { return g_contextid; }
-Time::Timestamp& program2::getFrameTime() { return g_frameTime; }
+util2::Time::Timestamp& program2::getFrameTime() { return g_frameTime; }
 bool             program2::getSlowRenderFlag() { return g_slowRender; }
 
 
@@ -176,7 +176,7 @@ void program2::initializeGraphics()
     gl::glClearTexImage(g_reductionMaxTexture, 0, gl::GL_RGBA, gl::GL_FLOAT, nullptr);
     
     g_reductionBuffer.resize(g_reductionBufferLength);
-    util::__memset( g_reductionBuffer.data(), g_reductionBufferLength, vec4f{0.0f});
+    util2::memset( g_reductionBuffer.data(), g_reductionBufferLength, vec4f{0.0f});
 
 
 
@@ -288,7 +288,7 @@ static void render_imgui_interface()
     }
     if(awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT)) {
         if(g_runCodeOnceFlag) {
-            g_splatterColor = vec4f{ random32f(), random32f(), 0.0f, 1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), 0.0f, 1.0f };
             g_runCodeOnceFlag = false;
         }
     }

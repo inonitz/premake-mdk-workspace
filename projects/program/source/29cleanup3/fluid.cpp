@@ -1,7 +1,7 @@
 #include "fluid.hpp"
 #include "vars.hpp"
-#include <util/marker2.hpp>
-#include <util/random.hpp>
+#include <util2/C/marker4.h>
+#include <util2/random.hpp>
 #include <glbinding/gl/gl.h>
 #include <awc2/C/awc2.h>
 #include <immintrin.h>
@@ -75,12 +75,12 @@ void fluid::clear()
         /* but i assume its negligeble */ \
         \
         counter_cpu.begin(); \
-        Time::GPUTimer::begin(counter_gpu); \
+       Time::GPUTimer::begin(counter_gpu); \
         __VA_ARGS__; \
-        Time::GPUTimer::end(counter_gpu); \
+       Time::GPUTimer::end(counter_gpu); \
         counter_cpu.end(); \
     } else { \
-        TIME_NAMESPACE_TIME_CODE_BLOCK(counter_cpu, __VA_ARGS__); \
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(counter_cpu, __VA_ARGS__); \
     } \
 
 
@@ -137,7 +137,7 @@ void fluid::addSourceDefault()
         0.01f,
         vec2f{0, 0},
         vec4f{0.0f},
-        vec4f{ random32f(), random32f(), random32f(), 1.0f }
+        vec4f{ util2::random32f(), util2::random32f(), util2::random32f(), 1.0f }
     });
     return;
 }
@@ -305,7 +305,7 @@ static void compute_error(
 
 
     g_computeErrorCPU.begin();
-    util::__memcpy(&g_prevErrorValues[0], &g_currErrorValues[0], 3);
+    util2::memcpy(&g_prevErrorValues[0], &g_currErrorValues[0], 3);
     g_currErrorValues[0] = vec4f{1000};
     g_currErrorValues[1] = vec4f{0.0f};
     g_currErrorValues[2] = vec4f{0.0f};
@@ -313,7 +313,7 @@ static void compute_error(
     auto* mappedptr = __rcast(vec4f*, g_reductionErrMappedBuf);
     vec4f local_minmaxavg[3];
     for(i32 i = 0; i < g_reductionBufferLength; ++i) {
-        util::__memcpy(&local_minmaxavg[0], &mappedptr[3 * i], 3);
+        util2::memcpy(&local_minmaxavg[0], &mappedptr[3 * i], 3);
 
         g_currErrorValues[0] = compareLessThanXY_M128(
             local_minmaxavg[0].xmm, 

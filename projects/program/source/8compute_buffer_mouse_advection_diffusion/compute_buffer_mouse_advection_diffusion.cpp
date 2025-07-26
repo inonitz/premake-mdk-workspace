@@ -2,16 +2,16 @@
 #include <threads.h>
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
-#include <util/time.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
+#include <util2/random.hpp>
+#include <util2/time.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "gl/shader2.hpp"
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 static inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -34,7 +34,7 @@ __unused static inline void initializeVectorFields(vec2u const& dims, std::vecto
     mark();
     field.resize(dims.x * dims.y);
     for(u64 i = 0; i < field.size(); ++i) {
-        f32 rand = random32f();
+        f32 rand = util2::random32f();
         field[i] = vec4f{
             0.0f, 0.0f, rand, 1.0f
         };
@@ -75,7 +75,7 @@ static f32                g_splatterRadius{0.5};
 static vec4f              g_splatterColor{1.0f, 1.0f, 1.0f, 1.0f};
 static bool               g_mousePressed{false};
 static u32                g_frameCounter{0};
-static Time::Timestamp    g_frameTime;
+static util2::Time::Timestamp    g_frameTime;
 
 
 static ShaderProgramV2& gr_computeInteractive = g_compute[0];

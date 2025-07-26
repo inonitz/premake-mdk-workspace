@@ -1,8 +1,8 @@
 #ifndef __AWC2_WINDOW_TYPES_HEADER__
 #define __AWC2_WINDOW_TYPES_HEADER__
-#include <util/macro.h>
-#include <util/base_type.h>
-#include <util/static_assert.h>
+#include <util2/C/macro.h>
+#include <util2/C/base_type.h>
+#include <util2/C/static_assert.h>
 
 
 namespace AWC2 {
@@ -110,8 +110,23 @@ struct alignsz(8) WindowDescriptor {
         stateFlags  = __scast(WindowStateFlag,    (wd_bits >> 56) & 0xFF);
         return *this;
     }
+
+
+    static WindowDescriptor getNullDescriptor() {
+        return WindowDescriptor{0, 0, WindowCreationFlag::MAX };
+    }
+
+
+    u64 asBits() const {
+        u64 result;
+        result  = ( __scast(u64, stateFlags)  << 56 );
+        result |= ( __scast(u64, createFlags) << 48 );
+        result |= ( __scast(u64, refreshRate) << 32 );
+        result |= framebufferChannels;
+        return result;
+    }
 };
-UTIL_STATIC_ASSERT(sizeof(WindowDescriptor) == 8, WindowDescriptor, "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(WindowDescriptor) == 8, WindowDescriptor, "Conforming Size Types Across Compilers")
 
 
 } // namespace AWC2

@@ -1,13 +1,13 @@
 #include "shader2.hpp"
-#include "util/file.hpp"
-#include "util/marker2.hpp"
+#include "util2/file.hpp"
+#include "util2/C/marker4.h"
 #include <glbinding/gl/gl.h>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 
 
-using namespace util;
+using namespace util2;
 
 
 static inline std::array<char, 2048> genericErrorLogBuffer;
@@ -127,7 +127,7 @@ void Program::refreshShaderSource(u32 shaderID, BufferData const& buffer)
 
 void Program::resizeLocalWorkGroup(u32 shaderID, u32 workGroupSizeX, u32 workGroupSizeY, u32 workGroupSizeZ)
 {
-    ifcrash_debug(m_shaders[shaderID].type != gl::GL_COMPUTE_SHADER);
+    ifcrash(m_shaders[shaderID].type != gl::GL_COMPUTE_SHADER);
     writeComputeGroupSizeToShader(m_sources[shaderID].data(), workGroupSizeX, workGroupSizeY, workGroupSizeZ);
     return;
 }
@@ -142,7 +142,7 @@ bool Program::compile()
 
     /* Shader Compile stage Begin. */
     for(; i < m_shaders.size() && successStatus; ++i) {
-        ifcrash_debug(m_sources[i].size() > UINT32_MAX);
+        ifcrash(m_sources[i].size() > UINT32_MAX);
         populate = {
             m_sources[i].data(),
             __scast(u32, m_sources[i].size())
@@ -214,7 +214,7 @@ void Program::destroy()
 void Program::UniformBlock(std::string_view const& name, u32 blockIndex)
 {
     u32 tmp = gl::glGetProgramResourceIndex(m_id, gl::GL_UNIFORM_BLOCK, name.data());
-    ifcrash_debug(tmp == gl::GL_INVALID_INDEX);
+    ifcrash(tmp == gl::GL_INVALID_INDEX);
     gl::glUniformBlockBinding(m_id, tmp, blockIndex);
     return;
 }
@@ -222,7 +222,7 @@ void Program::UniformBlock(std::string_view const& name, u32 blockIndex)
 void Program::StorageBlock(std::string_view const& name, u32 blockIndex)
 {
     u32 tmp = gl::glGetProgramResourceIndex(m_id, gl::GL_SHADER_STORAGE_BLOCK, name.data());
-    ifcrash_debug(tmp == gl::GL_INVALID_INDEX);
+    ifcrash(tmp == gl::GL_INVALID_INDEX);
     gl::glShaderStorageBlockBinding(m_id, tmp, blockIndex);
     return;
 }

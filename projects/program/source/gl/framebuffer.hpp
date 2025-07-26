@@ -1,6 +1,6 @@
 #ifndef __OPENGL_UTIL_FRAMEBUFFER__
 #define __OPENGL_UTIL_FRAMEBUFFER__
-#include <util/types.hpp>
+#include <util2/C/base_type.h>
 #include <glbinding/gl/enum.h>
 
 

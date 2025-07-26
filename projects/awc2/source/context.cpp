@@ -1,7 +1,7 @@
 #include "awc2/context.hpp"
 #include "internal_instance.hpp"
 #include "internal_state.hpp"
-#include <util/ifcrash.hpp>
+#include <util2/ifcrash.hpp>
 
 
 namespace AWC2 {

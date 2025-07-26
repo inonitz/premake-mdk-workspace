@@ -1,8 +1,8 @@
 #include "optimize2.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -30,7 +30,7 @@ i32 optimize_again_and_again_and_again_and_again()
     while(alive) 
     {
         optimize17::getFrameTime().begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(optimize17::getTimer0(), {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(optimize17::getTimer0(), {
             awc2newframe();
             awc2begin();
         });
@@ -40,7 +40,7 @@ i32 optimize_again_and_again_and_again_and_again()
             if(optimize17::getSlowRenderFlag()) {
                 thrd_sleep(&slow_render_sleep_duration, NULL);
             }
-            TIME_NAMESPACE_TIME_CODE_BLOCK(optimize17::getRenderTime(), optimize17::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(optimize17::getRenderTime(), optimize17::render());
         }
 
 
@@ -49,7 +49,7 @@ i32 optimize_again_and_again_and_again_and_again()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(optimize17::getTimer1(), awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(optimize17::getTimer1(), awc2end());
         optimize17::getFrameTime().end();
     }
     markstr("Main App Loop End");

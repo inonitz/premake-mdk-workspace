@@ -8,159 +8,194 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-<h3 align="center">2D Incompressible Fluid Simulation</h3>
+<h3 align="center">Multi-Project Workspace Template</h3>
 
   <p align="center">
-    Implementation of </br>
-      <a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">
-        Chapter 38. Fast Fluid Dynamics Simulation on the GPU
-    </a> 
+    C/C++ Cross-Platform Multi-Project Template
+    <br />
   </p>
 </div>
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
-The following code simulates a 2D Incompressible Fluid using an:
-* Eulerian-Grid Scheme
-* Semi-lagrangian Advection Method [Unconditionally Stable]
-* System-of-Equations Jacobi Method Solver [Very easy to implement GPGPU]
-* Central Difference for Approximating Calculus Operators [O(x^2) Error]
+## About
+This project is my best current & continuous effort at a portable C++ multi-project environment (without CMake!)   
+This Project aims to work seamlessly across Linux & Windows  
+Current Integration of tools:
+  - [clangd](https://clangd.llvm.org/)
+  - [ASan](https://github.com/google/sanitizers/wiki/addresssanitizer)
+  - [UBSan](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
+  - [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+  - [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+  - [lldb](https://lldb.llvm.org/use/tutorial.html)
+  - Various useful C++ Libraries
+    * [ImGui](https://github.com/ocornut/imgui)
+    * [GLFW](https://github.com/glfw/glfw/releases)
+    * [glbinding](https://github.com/cginternals/glbinding/releases)
+    * [Catch2](https://github.com/catchorg/Catch2)
+    * [GoogleMock & GoogleTest](https://github.com/google/googletest)
+    * [Google Benchmark](https://github.com/google/benchmark)
 
-* **Essentially All methods here are references to the original work of** [Stam1999 - stable fluids](https://pages.cs.wisc.edu/~chaol/data/cs777/stam-stable_fluids.pdf)  
-**[Here](https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)) is a wikipedia article describing the method of solution**
+<!-- ABOUT THE PROJECT -->
+### Considerations
+The original motivation was mainly the continuous discomfort with using hand-made **[Makefiles](https://github.com/inonitz/makefile-library-template)** without recompilation targets, I had to recompile everything on every little change  
+More recently, I needed integration with various libraries & tools on vscode  
+I also needed **some** form of cross platform Support (Incoming [DLL Hell](https://stackoverflow.com/questions/1379287/i-keep-hearing-about-dll-hell-what-is-this)) (Also see [ABI Hell](https://stackoverflow.com/questions/2171177/what-is-an-application-binary-interface-abi)), so I eventually (unfortunately) decided I'll manage dependencies manually in a mono-repository (for now).
 
-<br>
-
-The currently most-updated revision ```29cleanup3/``` features the following:
-* Force/Dye/Force-Dye User-Simulation Interaction
-* Vorticity Confinement with variable coefficient
-* Variable Kinematic Viscosity, Delta Time & Poisson-Solver Iterations
-* Real-Time CFL/Reynolds Number Calculations (they're there to check solver correctness/stability)
-* Visualizations of Calculation Textures, in particular Velocity-Pressure/Dye/Curl/Absolute Curl/Velocity Error/Pressure Error/Velocity-X/Velocity-Y/Pressure/CFL
-* Real-Time Measurements of internal solver components - CPU & GPU Side:
-  * A GPU Timer (gl-Begin/End-Query) essentially acts as a fence,   
-    waiting for all previous GPU commands to finish  
-    **In Short: Using GPU Timers degrades Performance by a few milliseconds**
-
-  * When GPU Timers are not used, the calculations will be deferred until glfwSwapbuffers(),
-    which by then will be dispatched & computed, updating glMemoryBarrier
-
-</br>
-
-### Pretty Pictures
-Tomorrow, Im Tired lol :)
-
-
-</br>
-
+Considering the problem of build/meta-build systems, I examined multiple choices (found below) and eventually decided to use premake5 because of its relative simplicity to the competition:
+* **[Make](https://www.gnu.org/software/make/)** - Will not go back to those, too cumbersome to manage manually
+* **[CMake](https://cmake.org/)**           - Industry standard, everyone loves to hate it
+* **[xmake](https://github.com/xmake-io)**  - Didn't need an alternative to cmake
+* **[premake5](https://premake.github.io/)** - A meta build system with lua syntax (also like xmake, except more barebones)
+* **[Bazel](https://bazel.build/)** - Seemed a little too much & too complex for what I needed
+* **[Ninja](https://ninja-build.org/)** - I do not know of any particular examples of people writing ninja scripts manually
   
+Moreover, With the complexity involved in managing updates across multiple projects, when each of which uses this specific Mono-Repository and constantly changes/updates it, I've decided to move each Library here to its separate 'premake5-packaged' repository, with the eventual integration of git submodules to the library-consuming project
+
+
 ### Project Structure
-The Underlying Project Structure uses my [premake5-workspace-template](https://github.com/inonitz/premake5-workspace-template) repo,  
-You can expect the [```program/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program) folder to occupy all revisions of the fluid-solver,   
-culminating eventually with [```29cleanup3/```](https://github.com/inonitz/compute-shader-fluid-2d/tree/gpu-gems38/projects/program/source/29cleanup3) as the currently best revision
-<br>
-<br>
-<br>
+Each Project contains a ```premake5.lua``` file, describing everything about its compilation/linking  
+**There are 5 sub-project lua files available as reference/guiding points if you don't understand the Explanation below**
+#### To add a project to compilation/linking:
+* Create a ```premake5.lua``` file in your project root folder (see examples)
+* Add project path to ```PROJECT_LIST``` in ```premake5.lua```
+* Specify a ```LinkMyLibraryName``` function in ```dir.lua``` (see ```LinkLibExampleLibrary()``` for more info)
+* Use ```IncludeProjectHeaders(...)``` & ```LinkMyLibraryName``` in your other libraries/executables' (see ```sample/premake5.lua``` for more info)
+#### To add a dependency (Header Only library, prebuilt shared/static library, etc...) to compilation/linking:
+* Add the library to ```dependencies/```
+* Specify 2 functions in ```dir.lua```:
+  * ```LinkMyDependencyName```
+  * ```IncludeDependencyNameHeaders```
+* Use Them in your library/executables' premake5.lua 
 
 
 ### Built With
 <br> [<img height="100px" src="https://raw.githubusercontent.com/cginternals/glbinding/master/glbinding-logo.svg?sanitize=true">][glbinding-url] </br>
-<br> 
-  [![GLFW v3.4][GLFW.js]][GLFW-url]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  [![ImGui][ImGui.js]][ImGui-url]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  [![Premake][Premake.js]][Premake-url]
+<br>
+[<img height="150px" src="https://avatars.githubusercontent.com/u/11135954?s=150&v=4">][Premake-url]
+[<img height="150px" src="https://avatars.githubusercontent.com/u/3905364?s=150&v=4">][GLFW-url]
+[<img height="150px" src="https://avatars.githubusercontent.com/u/8225057?s=150&v=4">][ImGui-url]
 </br>
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Prerequisites - Instructions below work too, but you should follow [premake5-workspace-template](https://github.com/inonitz/premake5-workspace-template)
-* [premake](https://premake.github.io/docs/) 
-* Working compiler toolchain, preferably clang
-  * Windows: You should use [llvm](https://github.com/llvm/llvm-project/releases)
-  * Linux:
-      1. [installing-specific-llvm-version](https://askubuntu.com/questions/1508260/how-do-i-install-clang-18-on-ubuntu)
-      2. [configuring-symlinks](https://unix.stackexchange.com/questions/596226/how-to-change-clang-10-llvm-10-etc-to-clang-llvm-etc)
-      3. **You Don't have to use LLVM, gcc works too**
-  * Define these environment variables (in your PATH):
-    * LLVMInstallDir
-    * LLVMToolsVersion
-* Powershell / Any Standard unix-shell
+### Prerequisites
+1. [premake5](https://premake.github.io/docs/)
+2. Windows/Linux:
+   - **Windows:**
+   - [Msys2 Clang64](https://www.mingw-w64.org/getting-started/msys2-llvm)
+   - [Clang LLVM](https://github.com/llvm/llvm-project/releases)
+      * **[NOTE]:** There may be compilation errors with Clang LLVM due to <threads.h>
+   - **Linux:**
+   - [Installing a specific llvm version](https://askubuntu.com/questions/1508260/how-do-i-install-clang-18-on-ubuntu)
+   - [Configure Symlinks](https://unix.stackexchange.com/questions/596226/how-to-change-clang-10-llvm-10-etc-to-clang-llvm-etc) - as clang-'version_number' will not be detected by premake5
+3. Add your toolchain to the global PATH
+4. **[NOTE]:** LLVM-Clang relies on Platform-Specific System Headers & Libraries
+   - **Windows:** Standard Library implementation with System-Headers:
+      * MSYS2 (use [clang-mingw64](https://packages.msys2.org/groups/mingw-w64-clang-x86_64-toolchain) instead of LLVM-Clang)
+      * MinGW-w64
+      * WinLibs
+      * MSVC (libraries will be automatically detected)
+   - **Linux:** Will very likely work out of the box
+5. Bash Shell 
+    - **Windows:**
+    - [Git for Windows](https://gitforwindows.org/) 
+    - MSYS2 Clang64 Shell (Using MSYS2 without the provided terminal causes program execution issues with DLL's)
+    - **Linux:**
+    * Use your favourite Bash Shell
 
 
 ### Installation
-Just Clone the repo
+#### There are 4 branches available:
+* **with-subprojects** - Includes ImGui, GLFW, glbinding, various homebrew Utility Libraries [awc2, util2], with a sample opengl compute program
+* **barebones** - Executable-With-Library Sample, including reference premake files for: 
+    * ImGui
+    * GLFW
+    * glbinding
+    * awc2 & util2 (My own Utility Libraries)
+* **GoogleBenchmark** - like barebones, except with [google-benchmark](https://github.com/google/benchmark) and a running example
+* **GoogleTest-Mock** - like barebones, except with [google-test & google-mock](https://github.com/google/googletest) and a running example
 
-<br>
-
+```sh
+# If you want everything
+git clone -b with-subprojects https://github.com/inonitz/premake5-workspace-template.git
+# If you prefer to configure on your own
+git clone -b barebones https://github.com/inonitz/premake5-workspace-template.git
+# Don't forget to add your own remote repo
+git remote set-url origin your_github_username/premake5-workspace-template
+git remote -v
+```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-### Build Process
-```sh
-premake5 --os=windows --arch=x86_64 --cc=clang gmake2
-premake5 --os=windows --arch=x86_64 --cc=clang vs2022
-premake5 --os=linux   --arch=x86_64 --cc=gcc   gmake2
-premake5 --os=linux   --arch=x86_64 --cc=clang gmake2
-```
-You can also use this command to perform the whole build process,  
-if youre using gmake2 and a commandline:  
-```sh
-premake5 --os=windows/linux --arch=x86_64 buildallrel
-```
-**Dont forget to actually build using your favorite IDE/command-line utility**
 
-<br>
+call ```premake5 --help``` in the root of the repository
 
-### Execution
-**Static Library Builds: (premake5 gmake2, config=releaselib_amd64)**
+### Common Commands:
 ```sh
-./build/bin/ReleaseLib_amd64_program/program
-```  
-**DLL/Shared Library Builds: (premake5 gmake2, config=releasedll_amd64)**
-```sh
-./build/bin/ReleaseDll_amd64/program
+    premake5 cleanproj --proj=program 
+    premake5 cleanbuild
+    premake5 cleancfg
+    premake5 cleanclangd
+    premake5 cleanall 
+    premake5 export-compile-commands
+    premake5 ecc (same as export-compile-commands)
+    premake5 --os=windows --arch=x86_64 --cc=clang gmake
+    premake5 --os=windows --arch=x86_64 --cc=clang ninja
+    premake5 --os=windows --arch=x86_64 --cc=clang vs2022
+    premake5 --os=linux --arch=x86_64 --cc=clang gmake
+    premake5 --os=linux --arch=x86_64 --cc=gcc gmake
 ```
-**Visual Studio 2022 - Just Run normally using ```Local Windows Debugger```**
+
+
 
 <!-- ROADMAP -->
 ## Roadmap
-- Replacing Jacobi Method with the Multigrid Method for better performance & faster fluid convergence
-- Adding Arbitrary boundaries
-- Extending to 3D
-- MAC Staggered Grid
-- Different Simulation Schemes (FVM, etc...) for better simulation accuracy
-- Extending to compressible/Turbulent Models
+- Supporting VS2022 Project Solutions (they do not generate correctly)
+- Generating a launch.json at Project-Generation Time
+- Deleting files based on architecture (e.g ```cleanarch --arch='x'```)
+- Generating Test-Unit Projects for each library (see prototype ```premake5_generate_unit_test_per_tu.lua```)
+- Adding an action to update compile_commands.json based on target
+- Integrating Cppcheck
+- Integrating a cross-platform C++ profiler With Flame Graphs - [Tracy](https://github.com/wolfpld/tracy)(?)/[Optick](https://github.com/bombomby/optick)(?)/(?)
+- Cross-platform package management - [Spack](github.com/spack/spack?tab=readme-ov-file)(?)
+- Integration of [LLVM Machine-Code Analyzer](https://llvm.org/docs/CommandGuide/llvm-mca.html)
+- Utilizing [Profile-Guided Optimization](https://clang.llvm.org/docs/UsersManual.html#profile-guided-optimization)
+- Automating this whole thing with Dev-Containers & Docker (Several issues, one being very gpu-specific solutions from every vendor) 
+- Optimization of Project-Generation Time:
+  * ```with-subprojects``` branch
+    * ```gmake```
+      * ~3200ms [windows] 
+      * ~2200ms [wsl2] 
+    * ```ninja```
+      * ~3100ms [windows]
+      * ~2800ms [wsl2]
+  * ```barebones``` branch
+    * ```gmake```
+      * ~120ms [windows]
+      * ~TBD [wsl2]
+    * ninja
+      * ~120ms [windows]
+      * ~TBD [wsl2]
 
 
 <!-- CONTRIBUTING -->
 ## Contributing
-If you have a suggestion, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".  
+If you have a suggestion, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
 
 <!-- LICENSE -->
 ## License
-Distributed under the MIT License. See `LICENSE` file for more information.
+Distributed under the MIT License. See `LICENSE` file.
 
 
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 * [Kumodatsu](https://github.com/Kumodatsu/template-cpp-premake5/tree/master) For the initial template repo
 * [Jarod42](https://github.com/Jarod42/premake-export-compile-commands/tree/Improvements) For the Improvements branch of export-compile-commands
+* [Premake Ninja](https://github.com/jimon/premake-ninja) - Ninja Build System integration with premake5
 * [Best-README](https://github.com/othneildrew/Best-README-Template)
-
-
-<!-- References -->
-## References
-* [Fluid Mechanics 101](https://www.youtube.com/@fluidmechanics101/videos)
-* [GPU Gems 38](https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu)
-* [Stable Fluids - Stam 1999](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/ns.pdf)
-* [Colour Advice](https://www.kennethmoreland.com/color-advice/)
-* [Computational Methods for Fluid Dynamics - Fourth Edition (Ferziger, Perić, L. Street)](https://www.amazon.com/Computational-Methods-Fluid-Dynamics-Ferziger/dp/3319996916)
-* [Online PDF of the Above Book](https://elmoukrie.com/wp-content/uploads/2022/05/joel-h.-ferziger-milovan-peric-robert-l.-street-computational-methods-for-fluid-dynamics-springer-international-publishing-2020.pdf)
-
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

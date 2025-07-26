@@ -1,7 +1,7 @@
 #ifndef __AWC2_ENTRY_INTERFACE_HEADER__
 #define __AWC2_ENTRY_INTERFACE_HEADER__
 #include "C/awc2_api.h"
-#include <util/macro.h>
+#include <util2/C/macro.h>
 
 
 /* 

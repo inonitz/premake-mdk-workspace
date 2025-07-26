@@ -2,7 +2,6 @@ project "imgui"
     systemversion "latest"
     warnings      "extra"
     rtti          "On"
-    SpecifyGlobalProjectCXXVersion()
     -- Project Structure
     files { 
         "include/**.h",
@@ -11,33 +10,26 @@ project "imgui"
         "source/**.cpp"
     }
     -- Specify Include Headers
-    includedirs { 
-        "include"
-    }
-    IncludeProjectHeaders("glfw-3.4")
+    -- Other Project Includes Defined here...
+    -- e.g IncludeProjectHeaders(...)
+    includedirs { "include" }
+    IncludeProjectHeaders("glfw34")
 
     
     -- Build Directories &// Structure
     SetupBuildDirectoriesForLibrary()
 
     -- Build Options
+    buildoptions {}
 
     -- Linking Options
     LinkToStandardLibraries()
     LinkGLFWLibrary()
     filter "system:windows"
-        links { 
-            "imm32",
-            "gdi32",
-            "user32"
-        }
+        links { "imm32", "gdi32", "user32", "shell32" }
+    
     filter "system:linux"
-        links { 
-            "pthread",
-            "dl", 
-            "X11", 
-            "Xrandr"
-        }
+        links { "pthread", "dl", "X11", "Xrandr" }
     filter {}
 
     -- Macros

@@ -1,10 +1,11 @@
 #include "awc2/C/awc2.h"
+#include "awc2/context.hpp"
 #include "awc2/entry.hpp"
 #include "awc2/input.hpp"
 #include "../internal_event.hpp"
 #include "../internal_instance.hpp"
 #include "../internal_state.hpp"
-#include <util/static_assert.h>
+#include <util2/C/static_assert.h>
 #ifdef __cplusplus
 #   define AWC2_EXTERNC extern "C"
 #else
@@ -12,31 +13,31 @@
 #endif
 
 
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2KeyCode) == sizeof(AWC2::Input::keyCode), 
     InputKeyCodeType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2MouseButton) == sizeof(AWC2::Input::mouseButton),
     InputMouseButtonType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2CursorPosition) == sizeof(AWC2::Input::cursorPosition),
     InputMouseButtonType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2CursorPosition64) == sizeof(AWC2::Input::cursorPosition64),
     InputCursorPositionType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2CursorMode) == sizeof(AWC2::Input::cursorMode),
     InputCursorModeType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2ContextID) == sizeof(AWC2::ContextID),
     ContextIDType_SizeEqualityCheck, ""
 );
-UTIL_STATIC_ASSERT(
+UTIL2_STATIC_ASSERT(
     sizeof(AWC2ContextDescriptor) == sizeof(AWC2::ContextDescriptor),
     ContextDescriptionType_SizeEqualityCheck, ""
 );
@@ -133,7 +134,7 @@ AWC2_EXTERNC void awc2initializeContext(AWC2ContextDescriptor const* ctxt)
         AWC2::WindowDescriptor{
             ctxt->winDesc.framebufferChannels,
             ctxt->winDesc.refreshRate,
-            __scast(AWC2::WindowCreationFlag, ctxt->winDesc.createFlags)
+            AWC2::WindowCreationFlag{ctxt->winDesc.createFlags}
         }
     };
     AWC2::initializeContext(cppdesc);

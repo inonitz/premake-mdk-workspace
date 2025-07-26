@@ -1,7 +1,7 @@
 #ifndef __AWC2_CONTEXT_INTERFACE_HEADER__
 #define __AWC2_CONTEXT_INTERFACE_HEADER__
 #include "C/awc2_api.h"
-#include "util/macro.h"
+#include "util2/C/macro.h"
 #include "window_types.hpp"
 
 
@@ -61,11 +61,11 @@ namespace AWC2 {
     using ContextMap = u32;
 
 
-    UTIL_STATIC_ASSERT(sizeof(ContextID)         == 1,  ContextID,         "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(ContextMap)        == 4,  ContextMap,        "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(ContextList)       == 40, ContextList,       "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(ViewportSize)      == 8,  ViewportSize,      "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(ContextDescriptor) == 16, ContextDescriptor, "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(ContextID)         == 1,  ContextID,         "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(ContextMap)        == 4,  ContextMap,        "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(ContextList)       == 40, ContextList,       "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(ViewportSize)      == 8,  ViewportSize,      "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(ContextDescriptor) == 16, ContextDescriptor, "Conforming Size Types Across Compilers")
 
 
 

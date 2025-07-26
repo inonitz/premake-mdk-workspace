@@ -1,8 +1,8 @@
 #ifndef __AWC2_C_INPUT_INTERFACE_HEADER__
 #define __AWC2_C_INPUT_INTERFACE_HEADER__
-#include <util/macro.h>
-#include <util/base_type.h>
-#include <util/static_assert.h>
+#include <util2/C/macro.h>
+#include <util2/C/base_type.h>
+#include <util2/C/static_assert.h>
 
 
 #ifdef __cplusplus
@@ -87,7 +87,7 @@ typedef struct __awc2_genericCursorPosition {
     };
     DISABLE_WARNING_POP
 } AWC2CursorPosition;
-UTIL_STATIC_ASSERT(sizeof(AWC2CursorPosition) == 8,  AWC2CursorPositionf32, "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2CursorPosition) == 8,  AWC2CursorPositionf32, "Conforming Size Types Across Compilers")
 
 
 typedef struct __awc2_genericCursorPositionf64 {
@@ -103,7 +103,7 @@ typedef struct __awc2_genericCursorPositionf64 {
     };
     DISABLE_WARNING_POP
 } AWC2CursorPosition64;
-UTIL_STATIC_ASSERT(sizeof(AWC2CursorPosition64) == 16, AWC2CursorPositionf64, "Conforming Size Types Across Compilers")
+UTIL2_STATIC_ASSERT(sizeof(AWC2CursorPosition64) == 16, AWC2CursorPositionf64, "Conforming Size Types Across Compilers")
 
 
 #ifdef __cplusplus

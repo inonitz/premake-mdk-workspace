@@ -2,21 +2,22 @@ project "awc2"
     systemversion "latest"
     warnings      "extra"
     rtti          "On"
-    SpecifyGlobalProjectCXXVersion()
     -- Project Structure
     files {
         "include/**.h",
-        "include/**.c",
         "include/**.hpp",
+        "source/**.c",
         "source/**.cpp"
     }
 
     -- Specify Include Headers
+    -- Other Project Includes Defined here...
+    -- e.g IncludeProjectHeaders(...)
     includedirs { "include" }
-    IncludeProjectHeaders("util")
-    IncludeProjectHeaders("glfw-3.4")
+    IncludeProjectHeaders("util2")
     IncludeProjectHeaders("glbinding")
     IncludeProjectHeaders("glbinding-aux")
+    IncludeProjectHeaders("glfw34")
     IncludeProjectHeaders("imgui")
 
     
@@ -24,17 +25,13 @@ project "awc2"
     SetupBuildDirectoriesForLibrary()
 
     -- Build Options
-    filter { "files:**.h", "files:**.c" }
-        cdialect "C11"
-    filter { "files:**.hpp", "files:**.cpp" }
-        cppdialect "C++17"
-    filter {}
+    buildoptions {}
 
     -- Linking Options
     LinkToStandardLibraries()
-    LinkUtilLibrary()
-    LinkGLFWLibrary()
+    LinkUtil2Library()
     LinkGLBindingLibraries()
+    LinkGLFWLibrary()
     LinkImGuiLibrary()
     
     -- Macros

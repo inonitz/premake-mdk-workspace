@@ -1,10 +1,9 @@
 #include "vars.hpp"
 #include "glbinding/gl/enum.h"
 #include "glbinding/gl/functions.h"
-#include "util/util.hpp"
-#include <util/aligned_malloc.hpp>
+#include <util2/aligned_malloc.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 namespace anotherattempt26 {
@@ -35,21 +34,21 @@ i64                g_maxFrameTimeNs{0};
 i64                g_avgFrameTimeNs{0};
 const i64          g_slowRenderDurationNs{50 * 1'000'000'000ll};
 i64                g_waitTime{};
-Time::Timestamp    g_frameTime{};
-Time::Timestamp    g_renderTime{};
-Time::Timestamp    g_beginFrameTime{};
-Time::Timestamp    g_endFrameTime{};
-Time::Timestamp    g_computeFluidTime{};
-Time::Timestamp    g_computeVelTime{};
-Time::Timestamp    g_computeDyeTime{};
-Time::Timestamp    g_computeCFLTime{};
-Time::Timestamp    g_computeErrEstimateTime{};
-Time::Timestamp    g_computeMaximumCPU{};
-Time::Timestamp    g_computeMaximumGPU{};
-Time::Timestamp    g_computeErrorGPU{};
-Time::Timestamp    g_computeErrorCPU{};
-Time::Timestamp    g_renderImguiTime{};
-Time::Timestamp    g_renderScreenTime{};
+util2::Time::Timestamp    g_frameTime{};
+util2::Time::Timestamp    g_renderTime{};
+util2::Time::Timestamp    g_beginFrameTime{};
+util2::Time::Timestamp    g_endFrameTime{};
+util2::Time::Timestamp    g_computeFluidTime{};
+util2::Time::Timestamp    g_computeVelTime{};
+util2::Time::Timestamp    g_computeDyeTime{};
+util2::Time::Timestamp    g_computeCFLTime{};
+util2::Time::Timestamp    g_computeErrEstimateTime{};
+util2::Time::Timestamp    g_computeMaximumCPU{};
+util2::Time::Timestamp    g_computeMaximumGPU{};
+util2::Time::Timestamp    g_computeErrorGPU{};
+util2::Time::Timestamp    g_computeErrorCPU{};
+util2::Time::Timestamp    g_renderImguiTime{};
+util2::Time::Timestamp    g_renderScreenTime{};
 
 
 /* Compute Parameters */
@@ -183,7 +182,7 @@ void* g_reductionErrMappedBuf = nullptr;
 
 void clearSimulationTextures()
 {
-    markfmt("Cleared Simulation Textures");
+    markstr("Cleared Simulation Textures");
     for(auto& tex : g_texture) {
         gl::glClearTexImage(tex, 0, gl::GL_RGBA, gl::GL_FLOAT, nullptr);
     }
@@ -337,11 +336,11 @@ void initializeGraphics()
 
 
     g_boundaryTextureData = matrixView<vec4f>{
-        __rcast(vec4f*, util::aligned_malloc<sizeof(vec4f)>(g_dims.x * g_dims.y * sizeof(vec4f)) ),
+        __rcast(vec4f*, util2::aligned_malloc<sizeof(vec4f)>(g_dims.x * g_dims.y * sizeof(vec4f)) ),
         g_dims.x,
         g_dims.y
     };
-    util::__memset(g_boundaryTextureData.m_buf, g_dims.x * g_dims.y, vec4f{0.0f});
+    util2::memset(g_boundaryTextureData.m_buf, g_dims.x * g_dims.y, vec4f{0.0f});
     for(i32 i = 0; i < g_dims.x; ++i) {
         for(i32 j = 0; j < g_dims.j; ++j) {
             if( (i == 0 || i == g_dims.x - 1) || (j == 0 || j == g_dims.y - 1) ) 

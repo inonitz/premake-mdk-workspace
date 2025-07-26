@@ -1,6 +1,6 @@
 #include "backend18.hpp"
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "glbinding/gl/functions.h"
 #include "vars.hpp"
 
@@ -40,9 +40,9 @@ u32 features18::compute_fluid()
     }
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeDyeTime, compute_dye(nextIterationVel, previousIterationDye, nextIterationDye));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeDyeTime, compute_dye(nextIterationVel, previousIterationDye, nextIterationDye));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
     
     u32 resultTex = 0;
     switch(g_whatToRender) {

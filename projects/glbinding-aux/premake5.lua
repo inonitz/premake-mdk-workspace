@@ -2,7 +2,6 @@ project "glbinding-aux"
     systemversion "latest"
     warnings      "extra"
     rtti          "On"
-    SpecifyGlobalProjectCXXVersion()
     -- Project Structure
     files { 
         "include/**",
@@ -10,6 +9,8 @@ project "glbinding-aux"
     }
 
     -- Specify Include Headers
+    -- Other Project Includes Defined here...
+    -- e.g IncludeProjectHeaders(...)
     includedirs { "include" }
     IncludeProjectHeaders("glbinding")
 
@@ -17,6 +18,7 @@ project "glbinding-aux"
     SetupBuildDirectoriesForLibrary()
 
     -- Build Options
+    buildoptions {}
 
     -- Linking Options
     LinkToStandardLibraries()
@@ -26,18 +28,19 @@ project "glbinding-aux"
     filter {}
     
     -- Macros
-    filter { "system:windows" }
-        defines { "SYSTEM_WINDOWS" , "_CRT_SECURE_NO_WARNINGS" }
-    filter {}
     filter { "configurations:*Lib" }
         defines { "GLBINDING_STATIC_DEFINE", "GLBINDING_AUX_STATIC_DEFINE" }
     filter { "configurations:*Dll" }
         defines { "glbinding_aux_EXPORTS" }
     filter {}
-    defines { 
-        -- required for compilers using -std=c++20, -static-libstdc++ || clang_version < 19. 
-        -- ==> https://github.com/msys2/MINGW-packages/issues/17730 [further read]
-        "__GXX_TYPEINFO_EQUALITY_INLINE"
-    }
+    filter { "system:windows" }
+        -- defines { "SYSTEM_WINDOWS" , "_CRT_SECURE_NO_WARNINGS" }
+        defines { "SYSTEM_WINDOWS" }
+    filter {}
+    -- defines { 
+    --     -- required for compilers using -std=c++20, -static-libstdc++ || clang_version < 19. 
+    --     -- ==> https://github.com/msys2/MINGW-packages/issues/17730 [further read]
+    --     "__GXX_TYPEINFO_EQUALITY_INLINE"
+    -- }
 
     -- Custom Pre &// Post build Actions

@@ -4,6 +4,11 @@ build/
 # Makefiles
 Makefile
 
+# Ninja Build Files
+.ninja_deps
+.ninja_log
+*.ninja
+
 # Visual Studio Code files
 # .vscode/launch.json
 # .vscode/settings.json

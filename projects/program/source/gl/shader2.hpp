@@ -1,6 +1,6 @@
 #pragma once
-#include <util/base_type.h>
-#include <util/ifcrash.hpp>
+#include <util2/C/base_type.h>
+#include <util2/C/ifcrash2.h>
 #include <string_view>
 #include <vector>
 
@@ -119,7 +119,7 @@ public:
 	void refreshFromBuffers() {
 		BufferData buf;
 		for(size_t i = 0; i < m_shaders.size(); ++i) {
-			ifcrash_debug(m_sources[i].size() > UINT32_MAX);
+			ifcrash(m_sources[i].size() > UINT32_MAX);
 			buf = { m_sources[i].data(), __scast(u32, m_sources[i].size()) };
 			refreshShaderSource(i, buf);
 		}

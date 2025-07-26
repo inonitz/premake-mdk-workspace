@@ -1,6 +1,6 @@
 #include "internal_input.hpp"
 #include "awc2/input_types.hpp"
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <GLFW/glfw3.h>
 
 
@@ -166,7 +166,7 @@ ikey toKeyCode(u16 glfw)
 {
 	u8 i = 0;
 	while( i < (u8)ikey::ENUM_MAX && glfw != global_glfwKeys[i]) { ++i; }
-	debugnobr(if(unlikely(i == (u8)ikey::ENUM_MAX)) {
+	util2_debugnobr(if(unlikely(i == (u8)ikey::ENUM_MAX)) {
 		markfmt("glfwKeyToKeyCode() ==> couldn't find glfw-keyCode of value %u\n", glfw);
 	});
 	return __scast(ikey, i);
@@ -186,7 +186,7 @@ ibutton toMouseButton(u16 glfw)
 {
 	u8 i = 0;
 	while( i < (u8)ibutton::ENUM_MAX && glfw != global_glfwMouseButtons[i]) { ++i; }
-	debugnobr(if(unlikely(i == (u8)ibutton::ENUM_MAX)) {
+	util2_debugnobr(if(unlikely(i == (u8)ibutton::ENUM_MAX)) {
 		markfmt("glfwMouseButtonToButton() ==> couldn't find glfw-button of value %u\n", glfw);
 	});
 	return __scast(ibutton, i);

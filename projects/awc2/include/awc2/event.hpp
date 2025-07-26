@@ -1,6 +1,6 @@
 #ifndef __AWC2_EVENT_INTERFACE_HEADER__
 #define __AWC2_EVENT_INTERFACE_HEADER__
-#include <util/static_assert.h>
+#include <util2/C/static_assert.h>
 #include "C/awc2_api.h"
 #include "input_types.hpp"
 
@@ -57,12 +57,12 @@ namespace AWC2
     };
 
 
-    UTIL_STATIC_ASSERT(sizeof(user_callback_winsize_struct)     == 16, user_callback_winsize_struct,     "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(user_callback_keyboard_struct)    == 16, user_callback_keyboard_struct,    "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(user_callback_winfocus_struct)    == 16, user_callback_winfocus_struct,    "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(user_callback_mousecursor_struct) == 32, user_callback_mousecursor_struct, "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(user_callback_mousescroll_struct) == 32, user_callback_mousescroll_struct, "Conforming Size Types Across Compilers")
-    UTIL_STATIC_ASSERT(sizeof(user_callback_mousebutton_struct) == 16, user_callback_mousebutton_struct, "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_winsize_struct)     == 16, user_callback_winsize_struct,     "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_keyboard_struct)    == 16, user_callback_keyboard_struct,    "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_winfocus_struct)    == 16, user_callback_winfocus_struct,    "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_mousecursor_struct) == 32, user_callback_mousecursor_struct, "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_mousescroll_struct) == 32, user_callback_mousescroll_struct, "Conforming Size Types Across Compilers")
+    UTIL2_STATIC_ASSERT(sizeof(user_callback_mousebutton_struct) == 16, user_callback_mousebutton_struct, "Conforming Size Types Across Compilers")
     typedef void (* user_callback_noop		  )(void* generic_pointer);
     typedef void (* user_callback_window_size )(user_callback_winsize_struct const*);
     typedef void (* user_callback_keyboard	  )(user_callback_keyboard_struct const*);

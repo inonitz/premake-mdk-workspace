@@ -88,7 +88,7 @@ void TextureBuffer::unbindUnit()
 // }
 
 
-void TextureBuffer::recreateImage(util::math::vec2u newDims)
+void TextureBuffer::recreateImage(util2::math::vec2u newDims)
 {
 	// unbindImage();
 	// unbindUnit();

@@ -16,9 +16,9 @@ struct Window
 {
 public:
     bool create(
-        u16 width = 720, 
+        u16 width  = 720, 
         u16 height = 1080, 
-        u64 windowOptions = 0,
+        WindowDescriptor windowOptions = WindowDescriptor::getNullDescriptor(),
         GLFWwindow* multi_window_opengl_context_share = nullptr
     );
     void destroy();

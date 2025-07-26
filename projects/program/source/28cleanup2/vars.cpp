@@ -1,7 +1,7 @@
 #include "vars.hpp"
-#include <util/aligned_malloc.hpp>
+#include <util2/aligned_malloc.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 
 
 namespace cleanup228 {
@@ -31,21 +31,21 @@ i64                g_maxFrameTimeNs{0};
 i64                g_avgFrameTimeNs{0};
 const i64          g_slowRenderDurationNs{50 * 1'000'000'000ll};
 i64                g_waitTime{};
-Time::Timestamp    g_frameTime{};
-Time::Timestamp    g_renderTime{};
-Time::Timestamp    g_beginFrameTime{};
-Time::Timestamp    g_endFrameTime{};
-Time::Timestamp    g_computeFluidTime{};
-Time::Timestamp    g_computeVelTime{};
-Time::Timestamp    g_computeDyeTime{};
-Time::Timestamp    g_computeCFLTime{};
-Time::Timestamp    g_computeErrEstimateTime{};
-Time::Timestamp    g_computeMaximumCPU{};
-Time::Timestamp    g_computeMaximumGPU{};
-Time::Timestamp    g_computeErrorGPU{};
-Time::Timestamp    g_computeErrorCPU{};
-Time::Timestamp    g_renderImguiTime{};
-Time::Timestamp    g_renderScreenTime{};
+util2::Time::Timestamp    g_frameTime{};
+util2::Time::Timestamp    g_renderTime{};
+util2::Time::Timestamp    g_beginFrameTime{};
+util2::Time::Timestamp    g_endFrameTime{};
+util2::Time::Timestamp    g_computeFluidTime{};
+util2::Time::Timestamp    g_computeVelTime{};
+util2::Time::Timestamp    g_computeDyeTime{};
+util2::Time::Timestamp    g_computeCFLTime{};
+util2::Time::Timestamp    g_computeErrEstimateTime{};
+util2::Time::Timestamp    g_computeMaximumCPU{};
+util2::Time::Timestamp    g_computeMaximumGPU{};
+util2::Time::Timestamp    g_computeErrorGPU{};
+util2::Time::Timestamp    g_computeErrorCPU{};
+util2::Time::Timestamp    g_renderImguiTime{};
+util2::Time::Timestamp    g_renderScreenTime{};
 
 
 /* Compute Parameters */
@@ -167,7 +167,7 @@ void* g_reductionErrMappedBuf = nullptr;
 
 void clearSimulationTextures()
 {
-    markfmt("Cleared Simulation Textures");
+    markstr("Cleared Simulation Textures");
     for(auto& tex : g_texture) {
         gl::glClearTexImage(tex, 0, gl::GL_RGBA, gl::GL_FLOAT, nullptr);
     }

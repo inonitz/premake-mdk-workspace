@@ -1,9 +1,9 @@
 #include "cleanup.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -26,14 +26,14 @@ i32 cleanup_old()
     while(alive) 
     {
         cleanup19::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(cleanup19::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(cleanup19::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(cleanup19::g_renderTime, cleanup19::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(cleanup19::g_renderTime, cleanup19::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +44,7 @@ i32 cleanup_old()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(cleanup19::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(cleanup19::g_endFrameTime, awc2end());
         cleanup19::g_frameTime.end();
         ++cleanup19::g_frameCounter;
     }

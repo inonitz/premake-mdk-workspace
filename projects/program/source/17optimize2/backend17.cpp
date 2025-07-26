@@ -1,6 +1,6 @@
 #include "backend17.hpp"
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "vars.hpp"
 
 
@@ -39,8 +39,8 @@ u32 optimize17::compute_fluid()
     }
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
 
     return nextIterationVel;
 }

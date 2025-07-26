@@ -1,15 +1,15 @@
 #pragma once
-#include <util/base_type.h>
-#include <util/time.hpp>
+#include <util2/C/base_type.h>
+#include <util2/time.hpp>
 
 
 namespace ssbowork {
 
 u8               getContextID();
-Time::Timestamp& getFrameTime();
-Time::Timestamp& getRenderTime();
-Time::Timestamp& getTimer0();
-Time::Timestamp& getTimer1();
+util2::Time::Timestamp& getFrameTime();
+util2::Time::Timestamp& getRenderTime();
+util2::Time::Timestamp& getTimer0();
+util2::Time::Timestamp& getTimer1();
 bool             getSlowRenderFlag();
 void initializeLibrary();
 void destroyLibrary();

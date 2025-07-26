@@ -105,21 +105,26 @@
     // if you want proper clangd linting in vscode =>
     //     Define VSCodeClangdAbsPath & VSCodeClangdQueryDriverAbsPath
     // [NOTE]: The Vars are a direct path to their respective executable
-    //
-    //
+    // VSCodeClangdAbsPath            - clangd executable
+    // VSCodeClangdQueryDriverAbsPath - compiler executable (clang, gcc, etc...)
+    // VSCodeClangFormatAbsPath       - clang-format executable
     "clangd.path": "${env:VSCodeClangdAbsPath}",
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/.vscode/compile_commands",
         "--query-driver=${env:VSCodeClangdQueryDriverAbsPath}",
         "--background-index",
         "--pch-storage=memory",
-        "-j=8",
+        "-j=16",
         // "-pretty",
         // "--log=verbose",
     ],
-    "clang-format.executable": "${env:VSCodeClangFormatAbsPath}"
+    // "clang-format.executable": "${env:VSCodeClangFormatAbsPath}",
+    "lldb.displayFormat": "auto",
+    "lldb.showDisassembly": "auto",
+    "lldb.dereferencePointers": false,
+    "lldb.consoleMode": "commands"
     
-    // If you'll ever need to use fallback flags, Update the config below
+    // If you'll ever need to use fallback flags, use the config below
     //
     // "clangd.fallbackFlags": [
     //     "--target=x86_64-windows-gnu",

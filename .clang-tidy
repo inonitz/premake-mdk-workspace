@@ -1,0 +1,18 @@
+---
+Checks: "-*,
+        llvm-*,
+        bugprone-*,
+        cert-*,
+        clang-analyzer-*,
+        clang-diagnostic-*,
+        concurrency-*,
+        cppcoreguidelines-*,
+        modernize-*,
+        performance-*,
+        portability-*,
+        readability-*,
+        -readability-redundant-control-flow
+"
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none

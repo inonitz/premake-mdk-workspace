@@ -120,7 +120,7 @@ int awc2_wip_multi_context_without_encapsulation()
                 continue;
             }
 
-            printf("Entered Draw Section for Context %u", __data.id);
+            printf("Entered Draw Section for Context %u\n", __data.id);
             glfwMakeContextCurrent(__data.winptr);
             glbinding::useContext(__data.id);
             ImGui::SetCurrentContext(__data.imgui);

@@ -1,9 +1,9 @@
 #include "features.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -26,14 +26,14 @@ i32 add_features_and_then_optimize()
     while(alive) 
     {
         features18::getFrameTime().begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(features18::getTimer0(), {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(features18::getTimer0(), {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(features18::getRenderTime(), features18::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(features18::getRenderTime(), features18::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +44,7 @@ i32 add_features_and_then_optimize()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(features18::getTimer1(), awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(features18::getTimer1(), awc2end());
         features18::getFrameTime().end();
         ++features18::getFrameCounter();
     }

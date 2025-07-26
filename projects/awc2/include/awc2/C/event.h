@@ -70,12 +70,12 @@ typedef struct __awc2_user_callback_mousebutton_struct
 
 
 
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_winsize_struct)     == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_keyboard_struct)    == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_winfocus_struct)    == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_mousecursor_struct) == 32, ContextDescriptor, "Conforming Size Types Across Compilers");
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_mousescroll_struct) == 32, ContextDescriptor, "Conforming Size Types Across Compilers");
-UTIL_STATIC_ASSERT(sizeof(AWC2User_callback_mousebutton_struct) == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_winsize_struct)     == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_keyboard_struct)    == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_winfocus_struct)    == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_mousecursor_struct) == 32, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_mousescroll_struct) == 32, ContextDescriptor, "Conforming Size Types Across Compilers");
+UTIL2_STATIC_ASSERT(sizeof(AWC2User_callback_mousebutton_struct) == 16, ContextDescriptor, "Conforming Size Types Across Compilers");
 typedef void (*AWC2User_callback_noop		 )(void* generic_pointer);
 typedef void (*AWC2User_callback_window_size )(AWC2User_callback_winsize_struct const*);
 typedef void (*AWC2User_callback_keyboard	 )(AWC2User_callback_keyboard_struct const*);

@@ -1,15 +1,14 @@
 #include "subimage.hpp"
 #include <threads.h>
 #include <glbinding/gl/gl.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/aligned_malloc.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
+#include <util2/aligned_malloc.hpp>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
 #include "gl/shader2.hpp"
 
 
-using namespace util::math;
+using namespace util2::math;
 
 
 inline void custom_mousebutton_callback(AWC2User_callback_mousebutton_struct const* data)
@@ -39,7 +38,7 @@ struct GLState {
 
 ShaderProgramV2 g_draw;
 ShaderProgramV2 g_interact;
-GLState state;
+GLState state{};
 u8 contextid;
 matrixView<vec4f> g_boundaryTextureData{};
 
@@ -195,9 +194,9 @@ i32 compute_user_interaction_with_subimage()
     // gl::glTextureStorage2D(state.m_interactTexture1, 1, gl::GL_RGBA32F, state.m_dims.x, state.m_dims.y);
     
     
-    vec4f* boundaries = __rcast(vec4f*, util::aligned_malloc<sizeof(vec4f)>(1920 * 1080 * sizeof(vec4f)));
+    vec4f* boundaries = __rcast(vec4f*, util2::aligned_malloc<sizeof(vec4f)>(1920 * 1080 * sizeof(vec4f)));
     markfmt("address is %lX", boundaries);
-    util::__memset(boundaries, 1920 * 1080, vec4f{0.0f});
+    util2::memset(boundaries, 1920 * 1080, vec4f{0.0f});
     for(i32 i = 0; i < state.m_dims.y; ++i) {
         boundaries[state.m_dims.y * (state.m_dims.x - 10) + i] = vec4f{1};
     }
@@ -242,7 +241,7 @@ i32 compute_user_interaction_with_subimage()
     //     boundaries
     // );
     // gl::glMemoryBarrier(gl::GL_ALL_BARRIER_BITS);
-    util::aligned_free(boundaries);
+    util2::aligned_free(boundaries);
 
 
     gl::glNamedFramebufferTexture(state.m_fbo, gl::GL_COLOR_ATTACHMENT0, state.m_drawTexture, 0);

@@ -47,7 +47,7 @@ AWC2_API void                    awc2destroyContext(AWC2ContextID id);
 AWC2_API void                    awc2initializeContext(AWC2ContextDescriptor const* ctxt);
 AWC2_API void                    awc2closeContext(AWC2ContextID id);
 AWC2_API void                    awc2getActiveContextList(AWC2ContextVector* outbuf);
-AWC2_API __hot bool_t              awc2getContextStatus(AWC2ContextID id); /* If context is closed or not */
+AWC2_API __hot bool_t            awc2getContextStatus(AWC2ContextID id); /* If context is closed or not */
 AWC2_API __hot void              awc2setCurrentContext(AWC2ContextID id);
 AWC2_API __hot AWC2ContextID     awc2getCurrentContext();
 AWC2_API __hot AWC2ViewportSize  awc2getCurrentContextViewport();

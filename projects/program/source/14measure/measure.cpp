@@ -2,8 +2,8 @@
 #include "backend14.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
+#include <util2/C/marker4.h>
 
 
 i32 measure_diffusion_and_work_distribution_across_shaders_also_revalidate_parallel_reduction()
@@ -29,7 +29,7 @@ i32 measure_diffusion_and_work_distribution_across_shaders_also_revalidate_paral
     while(alive) 
     {
         measure::getFrameTime().begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(measure::getTimer0(), {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(measure::getTimer0(), {
             awc2newframe();
             awc2begin();
         });
@@ -39,7 +39,7 @@ i32 measure_diffusion_and_work_distribution_across_shaders_also_revalidate_paral
             if(measure::getSlowRenderFlag()) {
                 thrd_sleep(&slow_render_sleep_duration, NULL);
             }
-            TIME_NAMESPACE_TIME_CODE_BLOCK(measure::getRenderTime(), measure::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(measure::getRenderTime(), measure::render());
         }
 
 
@@ -48,7 +48,7 @@ i32 measure_diffusion_and_work_distribution_across_shaders_also_revalidate_paral
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(measure::getTimer1(), awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(measure::getTimer1(), awc2end());
         measure::getFrameTime().end();
     }
     markstr("Main App Loop End");

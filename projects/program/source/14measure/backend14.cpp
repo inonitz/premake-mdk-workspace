@@ -2,11 +2,11 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <threads.h>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
-#include <util/marker2.hpp>
+#include <util2/vec2.hpp>
+#include <util2/random.hpp>
+#include <util2/C/marker4.h>
 #include "gl/shader2.hpp"
 
 
@@ -22,21 +22,21 @@ static constexpr const char* computeShaderFilename[9] = {
     "projects/program/source/14measure/7draw.comp",
     "projects/program/source/14measure/parallelReductionSSBO.comp"
 };
-using namespace util::math;
+using namespace util2::math;
 static u8                 g_runCodeOnceFlag{true};
 static u8                 g_contextid;
-static Time::Timestamp    g_frameTime{};
-static Time::Timestamp    g_measuremisc0;
-static Time::Timestamp    g_measuremisc1;
-static Time::Timestamp    g_renderTime{};
-static Time::Timestamp    g_computeVelTime{};
-static Time::Timestamp    g_computeCFLTime{};
-static Time::Timestamp    g_computeFluidTime{};
-static Time::Timestamp    g_retrieveTextureData{};
-static Time::Timestamp    g_computeMaximum{};
-static Time::Timestamp    g_renderImguiTime;
-static Time::Timestamp    g_renderScreenTime;
-static Time::Timestamp    g_refreshShaderTime;
+static util2::Time::Timestamp    g_frameTime{};
+static util2::Time::Timestamp    g_measuremisc0;
+static util2::Time::Timestamp    g_measuremisc1;
+static util2::Time::Timestamp    g_renderTime{};
+static util2::Time::Timestamp    g_computeVelTime{};
+static util2::Time::Timestamp    g_computeCFLTime{};
+static util2::Time::Timestamp    g_computeFluidTime{};
+static util2::Time::Timestamp    g_retrieveTextureData{};
+static util2::Time::Timestamp    g_computeMaximum{};
+static util2::Time::Timestamp    g_renderImguiTime;
+static util2::Time::Timestamp    g_renderScreenTime;
+static util2::Time::Timestamp    g_refreshShaderTime;
 
 
 static std::vector<vec4f> g_initialField;
@@ -121,10 +121,10 @@ static void compute_cfl(u32 texture);
 
 
 u8               measure::getContextID()  { return g_contextid; }
-Time::Timestamp& measure::getFrameTime()  { return g_frameTime; }
-Time::Timestamp& measure::getRenderTime() { return g_renderTime; }
-Time::Timestamp& measure::getTimer0() { return g_measuremisc0; }
-Time::Timestamp& measure::getTimer1() { return g_measuremisc1; }
+util2::Time::Timestamp& measure::getFrameTime()  { return g_frameTime; }
+util2::Time::Timestamp& measure::getRenderTime() { return g_renderTime; }
+util2::Time::Timestamp& measure::getTimer0() { return g_measuremisc0; }
+util2::Time::Timestamp& measure::getTimer1() { return g_measuremisc1; }
 bool             measure::getSlowRenderFlag() { return g_slowRender; }
 
 
@@ -226,7 +226,7 @@ void measure::initializeGraphics()
     //     gl::glClearTexImage(tex, 0, gl::GL_RGBA, gl::GL_FLOAT, nullptr);
     // }
     g_reductionBuffer.resize(g_reductionBufferLength);
-    util::__memset( g_reductionBuffer.data(), g_reductionBufferLength, vec4f{0.0f});
+    util2::memset( g_reductionBuffer.data(), g_reductionBufferLength, vec4f{0.0f});
 
 
 
@@ -295,8 +295,8 @@ void measure::render()
 
 
     u32 texToRender = 0;
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
 
 
     /* literally just the velocity texture on the screen */
@@ -344,7 +344,7 @@ static void render_imgui_interface()
     }
     if(awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT)) {
         if(g_runCodeOnceFlag) {
-            g_splatterColor = vec4f{ random32f(), random32f(), 0.0f, 1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), 0.0f, 1.0f };
             g_runCodeOnceFlag = false;
         }
     }
@@ -412,11 +412,11 @@ CFL Condition (< 1)  %9.6f\n\
     g_mousePressed,
     g_frameCounter,
     timeMeasurements[0],
-    Time::getGeneralPurposeStamp(0).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(1).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(2).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(3).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(4).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(0).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(1).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(2).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(3).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(4).value_units<f32>(1000),
     timeMeasurements[12],
     timeMeasurements[13],
     timeMeasurements[1],
@@ -490,10 +490,10 @@ static u32 compute_fluid()
     }
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeVelTime, compute_velocity(previousIterationVel, nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
     // compute_dye(nextIterationVel, previousIterationDye, nextIterationDye);
-    TIME_NAMESPACE_TIME_CODE_BLOCK(Time::getGeneralPurposeStamp(4), gl::glFinish());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(util2::Time::getGeneralPurposeStamp(4), gl::glFinish());
 
 
     return nextIterationVel;
@@ -703,7 +703,7 @@ static void compute_cfl(u32 texture)
     
 
     g_retrieveTextureData.begin();
-    util::__memcpy(g_reductionBuffer.data(), __rcast(vec4f*, g_mappedBuffer[0]), g_reductionBufferLength);
+    util2::memcpy(g_reductionBuffer.data(), __rcast(vec4f*, g_mappedBuffer[0]), g_reductionBufferLength);
     gl::glFenceSync(gl::GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     g_retrieveTextureData.end();
 

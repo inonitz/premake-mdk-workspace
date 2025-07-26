@@ -1,7 +1,7 @@
 #include "improve.hpp"
 #include <threads.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "vars.hpp"
 #include "render.hpp"
 #include "fluid.hpp"
@@ -29,7 +29,7 @@ i32 gpugems38_demo_last()
     while(alive) 
     {
         g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
@@ -37,9 +37,9 @@ i32 gpugems38_demo_last()
         
         render::clear();
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_fluidUpdateTime, fluid::update());
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImGuiTime, render::render_imgui());
-            TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderBlitTime,  render::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_fluidUpdateTime, fluid::update());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderImGuiTime, render::render_imgui());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderBlitTime,  render::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -50,7 +50,7 @@ i32 gpugems38_demo_last()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_endFrameTime, awc2end());
         g_frameTime.end();
         ++g_frameCounter;
     }

@@ -5,7 +5,7 @@
 #include "internal_state.hpp"
 
 
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #ifdef __linux__ /* Happens to be that glext.h has snuck into my codebase so I disable it */
 #	define GL_GLEXT_LEGACY /* https://fsunuc.physics.fsu.edu/git/gwm17/glfw/commit/8db1528c7496bb36884ee93791091d5eb186e6cd */
 #endif
@@ -19,7 +19,7 @@
 		)(&__args);
 
 #define __call_user_callback_func2(func_type, context_id, __args_ptr) \
-	func_type __local_func_ptr = __rcast(decltype(__local_func_ptr), \
+	func_type __local_func_ptr = __rcast(func_type, \
 		__awc2_lib_get_context(context_id).m_event_table.pointers[ \
 			UserFuncIndexer<func_type>()() \
 		]); \
@@ -45,7 +45,7 @@ void glfw_framebuffer_size_callback(notused GLFWwindow* handle, i32 w, i32 h)
 		markfmt("Width/Height in invalid ranges (%d x %d)", w, h);
 
 
-	const auto active_ctxt_id = *__rcast(u8*, glfwGetWindowUserPointer(handle));
+	const auto active_ctxt_id = *__scast(u8*, glfwGetWindowUserPointer(handle));
 	auto& win_data = __awc2_lib_get_context(active_ctxt_id).m_window.m_data;
 
 
@@ -121,7 +121,13 @@ void glfw_key_callback(
 		__scast(Input::inputState, (1 << action) ),
 		{0},
 	};
-	__call_user_callback_func2(user_callback_keyboard, active_ctxt_id, &__funcargs);
+
+	user_callback_keyboard __local_func_ptr = 
+		reinterpret_cast<user_callback_keyboard>(
+			__awc2_lib_get_context(active_ctxt_id).m_event_table.pointers[UserFuncIndexer<user_callback_keyboard>()()]
+		);
+	__local_func_ptr(&__funcargs);
+	// __call_user_callback_func2(user_callback_keyboard, active_ctxt_id, &__funcargs);
 
 
 	/* Call the ImGui Context Callback */

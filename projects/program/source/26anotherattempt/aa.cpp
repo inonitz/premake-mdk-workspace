@@ -1,8 +1,7 @@
 #include "aa.hpp"
 #include <threads.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -25,14 +24,14 @@ i32 another_boundary_implementation_attempt()
     while(alive) 
     {
         anotherattempt26::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(anotherattempt26::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(anotherattempt26::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(anotherattempt26::g_renderTime, anotherattempt26::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(anotherattempt26::g_renderTime, anotherattempt26::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -43,7 +42,7 @@ i32 another_boundary_implementation_attempt()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(anotherattempt26::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(anotherattempt26::g_endFrameTime, awc2end());
         anotherattempt26::g_frameTime.end();
         ++anotherattempt26::g_frameCounter;
     }

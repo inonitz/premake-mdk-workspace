@@ -1,6 +1,6 @@
 #include "backend21.hpp"
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "vars.hpp"
 
 
@@ -46,17 +46,17 @@ u32 boundary21::compute_fluid()
     }
 
 
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeVelTime, compute_velocity(
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeVelTime, compute_velocity(
         previousIterationDye,
         prevIterBoundary, nextIterBoundary,
         previousIterationVel, nextIterationVel
     ));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeDyeTime, compute_dye(
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeDyeTime, compute_dye(
         nextIterationVel, 
         nextIterBoundary,
         previousIterationDye, nextIterationDye
     ));
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeCFLTime, compute_cfl(nextIterationVel));
     
     u32 resultTex = 0;
     switch(g_chooseTextureToRender) {

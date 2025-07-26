@@ -2,11 +2,11 @@
 #include <glbinding/gl/gl.h>
 #include <imgui/imgui.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <threads.h>
-#include <util/marker2.hpp>
-#include <util/vec2.hpp>
-#include <util/random.hpp>
+#include <util2/C/marker4.h>
+#include <util2/vec2.hpp>
+#include <util2/random.hpp>
 #include "awc2/C/event.h"
 #include "awc2/C/input.h"
 #include "gl/shader2.hpp"
@@ -36,10 +36,10 @@
         "C:/CTools/Projects/main/projects/program/source/10velocityfield/7draw.comp"
     };
 #endif
-using namespace util::math;
+using namespace util2::math;
 static u8                 g_runCodeOnceFlag{true};
 static u8                 g_contextid;
-static Time::Timestamp    g_frameTime;
+static util2::Time::Timestamp    g_frameTime;
 static std::vector<vec4f> g_initialField;
 static vec2i              g_dims{1024, 1024};
 static f32                g_dt        = 0.01f;
@@ -97,7 +97,7 @@ static void compute_dye(u32 previousIteration, u32 nextIteration);
 
 
 u8               program::getContextID() { return g_contextid; }
-Time::Timestamp& program::getFrameTime() { return g_frameTime; }
+util2::Time::Timestamp& program::getFrameTime() { return g_frameTime; }
 bool             program::getSlowRenderFlag() { return g_slowRender; }
 
 
@@ -269,7 +269,7 @@ static void render_imgui_interface()
     }
     if(awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT)) {
         if(g_runCodeOnceFlag) {
-            g_splatterColor = vec4f{ random32f(), random32f(), 0.0f, 1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), 0.0f, 1.0f };
             g_runCodeOnceFlag = false;
         }
     }

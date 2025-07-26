@@ -1,9 +1,8 @@
 #include "arbitrary.hpp"
 #include <threads.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
-#include "util/time.hpp"
+#include <util2/time.hpp>
 #include "vars.hpp"
 #include "render.hpp"
 
@@ -26,14 +25,14 @@ i32 arbitrary_boundaries_in_sim()
     while(alive) 
     {
         boundary21::g_frameTime.begin();
-        TIME_NAMESPACE_TIME_CODE_BLOCK(boundary21::g_beginFrameTime, {
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(boundary21::g_beginFrameTime, {
             awc2newframe();
             awc2begin();
         });
 
         
         if(likely(!paused)) {
-            TIME_NAMESPACE_TIME_CODE_BLOCK(boundary21::g_renderTime, boundary21::render());
+            UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(boundary21::g_renderTime, boundary21::render());
         } else {
             thrd_sleep(&pause_sleep_duration, NULL);
         }
@@ -44,7 +43,7 @@ i32 arbitrary_boundaries_in_sim()
         if(awc2getCurrentContextWindowState() & AWC2_WINDOW_STATE_FLAG_MINIMIZED)
             paused = true;
         
-        TIME_NAMESPACE_TIME_CODE_BLOCK(boundary21::g_endFrameTime, awc2end());
+        UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(boundary21::g_endFrameTime, awc2end());
         boundary21::g_frameTime.end();
         ++boundary21::g_frameCounter;
     }

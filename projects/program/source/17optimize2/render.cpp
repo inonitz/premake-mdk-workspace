@@ -1,8 +1,8 @@
 #include "render.hpp"
-#include <util/random.hpp>
-#include <util/marker2.hpp>
+#include <util2/random.hpp>
+#include <util2/C/marker4.h>
 #include <awc2/C/awc2.h>
-#include <util/marker2.hpp>
+#include <util2/C/marker4.h>
 #include "vars.hpp"
 #include "backend17.hpp"
 #include <imgui/imgui.h>
@@ -47,8 +47,8 @@ void optimize17::render()
 
 
     u32 texToRender = 0;
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
-    TIME_NAMESPACE_TIME_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_renderImguiTime, render_imgui_interface());
+    UTIL2_TIME_NAMESPACE_MEASURE_CODE_BLOCK(g_computeFluidTime, texToRender = compute_fluid());
 
 
     /* literally just the velocity texture on the screen */
@@ -96,7 +96,7 @@ static void render_imgui_interface()
     }
     if(awc2isMouseButtonPressed(AWC2_MOUSEBUTTON_RIGHT)) {
         if(g_runCodeOnceFlag) {
-            g_splatterColor = vec4f{ random32f(), random32f(), 0.0f, 1.0f };
+            g_splatterColor = vec4f{ util2::random32f(), util2::random32f(), 0.0f, 1.0f };
             g_runCodeOnceFlag = false;
         }
     }
@@ -205,11 +205,11 @@ Maximum Velocity     %s\n\
     g_minRenderTime,
     g_maxRenderTime,
     g_avgRenderTime / __scast(f32, g_frameCounter),
-    Time::getGeneralPurposeStamp(0).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(1).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(2).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(3).value_units<f32>(1000),
-    Time::getGeneralPurposeStamp(4).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(0).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(1).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(2).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(3).value_units<f32>(1000),
+    util2::Time::getGeneralPurposeStamp(4).value_units<f32>(1000),
     timeMeasurements[12],
     timeMeasurements[13],
     timeMeasurements[1],

@@ -1,0 +1,7 @@
+# Exclude vendored third-party libraries from GitHub Linguist language stats
+projects/glbinding*/**   linguist-vendored
+projects/glfw*/**        linguist-vendored
+projects/imgui/**        linguist-vendored
+projects/glad/**         linguist-vendored
+dependencies/glm/**      linguist-vendored
+dependencies/GLFW/**     linguist-vendored
